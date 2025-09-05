@@ -13,7 +13,14 @@ import {
   Clock,
   Palette,
   User,
-  Calendar
+  Calendar,
+  Sparkles,
+  LogOut,
+  Edit3,
+  CheckCircle,
+  X,
+  ArrowRight,
+  ExternalLink
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -62,6 +69,11 @@ export default function Dashboard() {
     city: '',
     address: ''
   })
+  const [showSettingsForm, setShowSettingsForm] = useState(false)
+  const [settingsForm, setSettingsForm] = useState({
+    session_duration: 30,
+    max_ai_uses: 20
+  })
 
   useEffect(() => {
     loadDashboardData()
@@ -69,74 +81,75 @@ export default function Dashboard() {
 
   const loadDashboardData = async () => {
     try {
-      // Get current user from Supabase client
       const { data: { user }, error } = await supabase.auth.getUser()
       
       if (error || !user) {
-        // Not authenticated, redirect to login
         window.location.href = '/salon/login'
         return
       }
 
-      // Create a basic salon object from user data
-              // Fetch actual salon data from database
-        const { data: salonData, error: salonError } = await supabase
-          .from('salons')
-          .select('*')
-          .eq('auth_user_id', user.id)
-          .single() as { data: any, error: any }
+      const { data: salonData, error: salonError } = await supabase
+        .from('salons')
+        .select('*')
+        .eq('auth_user_id', user.id)
+        .single() as { data: any, error: any }
 
-        if (salonData && !salonError) {
-          setSalon({
-            id: salonData.id,
-            name: salonData.name || `Salon ${user.email}`,
-            email: salonData.email || user.email,
-            subscription_status: salonData.subscription_status || 'active',
-            session_duration: salonData.session_duration || 30,
-            max_ai_uses: salonData.max_ai_uses || 5,
-            total_ai_generations_used: salonData.total_ai_generations_used || 0,
-            free_trial_generations: salonData.free_trial_generations || 10,
-            qr_code_url: null,
-            location: salonData.location,
-            city: salonData.city,
-            address: salonData.address
-          })
-          
-          // Check if profile is incomplete
-          const isProfileIncomplete = !salonData.name || !salonData.city || !salonData.address
-          if (isProfileIncomplete) {
-            setProfileForm({
-              name: salonData.name || '',
-              city: salonData.city || '',
-              address: salonData.address || ''
-            })
-          }
-        } else {
-          // Create a basic salon entry if none exists
-          setSalon({
-            id: user.id,
-            name: '',
-            email: user.email || '',
-            subscription_status: 'active',
-            session_duration: 30,
-            max_ai_uses: 5,
-            total_ai_generations_used: 0,
-            free_trial_generations: 10,
-            qr_code_url: null,
-            location: '',
-            city: '',
-            address: ''
-          })
-          
-          // Set form to show profile completion
-          setProfileForm({
-            name: '',
-            city: '',
-            address: ''
-          })
+      if (salonData && !salonError) {
+        setSalon({
+          id: salonData.id,
+          name: salonData.name || `Salon ${user.email}`,
+          email: salonData.email || user.email,
+          subscription_status: salonData.subscription_status || 'active',
+          session_duration: salonData.session_duration || 30,
+          max_ai_uses: salonData.max_ai_uses || 5,
+          total_ai_generations_used: salonData.total_ai_generations_used || 0,
+          free_trial_generations: salonData.free_trial_generations || 10,
+          qr_code_url: null,
+          location: salonData.location,
+          city: salonData.city,
+          address: salonData.address
+        })
+        
+        const isProfileIncomplete = !salonData.name || !salonData.city || !salonData.address
+        if (isProfileIncomplete) {
+          setShowProfileForm(true)
         }
+        // Always set the profile form data for editing
+        setProfileForm({
+          name: salonData.name || '',
+          city: salonData.city || '',
+          address: salonData.address || ''
+        })
+        
+        // Set settings form data
+        setSettingsForm({
+          session_duration: salonData.session_duration || 30,
+          max_ai_uses: salonData.max_ai_uses || 20
+        })
+      } else {
+        setSalon({
+          id: user.id,
+          name: '',
+          email: user.email || '',
+          subscription_status: 'active',
+          session_duration: 30,
+          max_ai_uses: 5,
+          total_ai_generations_used: 0,
+          free_trial_generations: 10,
+          qr_code_url: null,
+          location: '',
+          city: '',
+          address: ''
+        })
+        
+        setShowProfileForm(true)
+        setProfileForm({
+          name: '',
+          city: '',
+          address: ''
+        })
+      }
       
-      // Set basic analytics
       setAnalytics({
         total_sessions: 0,
         active_sessions: 0,
@@ -160,8 +173,6 @@ export default function Dashboard() {
         return
       }
       
-      console.log('Generating QR code for salon:', salon.id)
-      
       const response = await fetch('/api/salon/qr', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -170,20 +181,13 @@ export default function Dashboard() {
           salon_name: salon.name 
         }),
       })
-
-      console.log('QR API response status:', response.status)
       
       if (response.ok) {
         const data = await response.json()
-        console.log('QR API response data:', data)
-        console.log('New try-on URL:', data.tryon_url)
-        console.log('Old try-on URL:', tryOnUrl)
         setQrCodeUrl(data.qr_code_url)
         setTryOnUrl(data.tryon_url)
-        alert(`QR code regenerated! New URL: ${data.tryon_url}`)
       } else {
         const errorData = await response.json()
-        console.error('QR API error:', errorData)
         alert(`Failed to generate QR code: ${errorData.error || 'Unknown error'}`)
       }
     } catch (error) {
@@ -197,140 +201,186 @@ export default function Dashboard() {
       const link = document.createElement('a')
       link.href = qrCodeUrl
       link.download = `${salon?.name || 'salon'}-qr-code.png`
+      document.body.appendChild(link)
       link.click()
-    }
-  }
-
-  const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut()
-      window.location.href = '/salon/login'
-    } catch (error) {
-      console.error('Logout error:', error)
-      // Force redirect even if logout fails
-      window.location.href = '/salon/login'
+      document.body.removeChild(link)
     }
   }
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!profileForm.name.trim() || !profileForm.city.trim() || !profileForm.address.trim()) {
-      alert('Please fill in all fields')
-      return
-    }
-
     try {
-      // Get current user first
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        alert('Please log in again')
-        window.location.href = '/salon/login'
+      const { data: { user }, error } = await supabase.auth.getUser()
+      
+      if (error || !user) {
+        alert('Authentication required')
         return
       }
 
       const response = await fetch('/api/salon/setup', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          salon_name: profileForm.name.trim(),
-          city: profileForm.city.trim(),
-          address: profileForm.address.trim(),
           user_id: user.id,
-          email: user.email
-        })
+          email: user.email,
+          salon_name: profileForm.name,
+          city: profileForm.city,
+          address: profileForm.address
+        }),
       })
 
-      const result = await response.json()
-
-      if (!response.ok) {
-        console.error('Profile update error:', result)
-        alert(result.error || 'Failed to update profile. Please try again.')
-        return
+      if (response.ok) {
+        const responseData = await response.json()
+        setShowProfileForm(false)
+        
+        // Update the salon state with the new data
+        if (responseData.salon) {
+          setSalon(prev => prev ? {
+            ...prev,
+            name: responseData.salon.name,
+            city: responseData.salon.city,
+            address: responseData.salon.address,
+            location: responseData.salon.location
+          } : prev)
+        }
+        
+        // Reload dashboard data to ensure everything is in sync
+        loadDashboardData()
+      } else {
+        const errorData = await response.json()
+        alert(`Failed to save salon information: ${errorData.error || 'Unknown error'}`)
       }
-
-      // Update salon state with new data
-      if (salon) {
-        setSalon({
-          ...salon,
-          name: profileForm.name.trim(),
-          city: profileForm.city.trim(),
-          address: profileForm.address.trim()
-        })
-      }
-
-      setShowProfileForm(false)
-      alert('Profile updated successfully!')
-      
     } catch (error) {
-      console.error('Profile update error:', error as Error)
-      alert('Failed to update profile. Please try again.')
+      console.error('Profile update error:', error)
+      alert('Failed to save salon information. Please try again.')
     }
   }
 
-  const isProfileIncomplete = salon && (!salon.name || !salon.city || !salon.address)
+  const handleSettingsSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser()
+      
+      if (error || !user) {
+        alert('Authentication required')
+        return
+      }
+
+      const response = await fetch('/api/salon/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: user.id,
+          session_duration: settingsForm.session_duration,
+          max_ai_uses: settingsForm.max_ai_uses
+        }),
+      })
+
+      if (response.ok) {
+        const responseData = await response.json()
+        setShowSettingsForm(false)
+        
+        // Update the salon state with the new settings
+        if (responseData.salon) {
+          setSalon(prev => prev ? {
+            ...prev,
+            session_duration: responseData.salon.session_duration,
+            max_ai_uses: responseData.salon.max_ai_uses
+          } : prev)
+        }
+        
+        alert('Settings updated successfully!')
+      } else {
+        const errorData = await response.json()
+        alert(`Failed to update settings: ${errorData.error || 'Unknown error'}`)
+      }
+    } catch (error) {
+      console.error('Settings update error:', error)
+      alert('Failed to update settings. Please try again.')
+    }
+  }
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    window.location.href = '/salon/login'
+  }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading dashboard...</p>
+          <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+            <Sparkles className="w-8 h-8 text-white" />
+          </div>
+          <p className="text-white/80">Loading your dashboard...</p>
         </div>
       </div>
     )
   }
 
+  const isProfileIncomplete = !salon?.name || !salon?.city || !salon?.address
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      {/* Background Effects */}
+      <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-pink-600/20 blur-3xl"></div>
+      <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-purple-500/30 rounded-full blur-3xl animate-pulse"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                {salon?.name || 'Your Salon'} Dashboard
-              </h1>
-              <p className="text-gray-600">Manage your virtual hair try-on experience</p>
+      <header className="relative z-50 bg-black/20 backdrop-blur-sm border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="relative">
+                <Sparkles className="h-8 w-8 text-purple-400" />
+                <div className="absolute inset-0 h-8 w-8 text-purple-400 animate-pulse opacity-50">
+                  <Sparkles className="h-8 w-8" />
+                </div>
+              </div>
+              <div>
+                <h1 className="text-xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
+                  Magic Mirror
+                </h1>
+                <p className="text-white/60 text-sm">Salon Dashboard</p>
+              </div>
             </div>
+            
             <div className="flex items-center space-x-4">
               <div className="text-right">
-                <p className="text-sm text-gray-500">Subscription Status</p>
-                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                  salon?.subscription_status === 'active' 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-red-100 text-red-800'
-                }`}>
-                  {salon?.subscription_status || 'Unknown'}
-                </span>
+                <p className="text-white font-medium">{salon?.name || 'Your Salon'}</p>
+                <p className="text-white/60 text-sm">{salon?.email}</p>
               </div>
-              <button className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
-                <CreditCard className="w-4 h-4 inline mr-2" />
-                Billing
+              <button
+                onClick={handleLogout}
+                className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all"
+              >
+                <LogOut className="w-5 h-5" />
               </button>
             </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Navigation Tabs */}
       {/* Profile Completion Banner */}
-      {isProfileIncomplete && !showProfileForm && (
-        <div className="bg-yellow-50 border-b border-yellow-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      {isProfileIncomplete && (
+        <div className="relative z-40 bg-gradient-to-r from-yellow-600/20 to-orange-600/20 backdrop-blur-sm border-b border-yellow-400/20">
+          <div className="max-w-7xl mx-auto px-6 py-3">
             <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <User className="w-5 h-5 text-yellow-600 mr-3" />
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                  <User className="w-4 h-4 text-white" />
+                </div>
                 <div>
-                  <h3 className="text-sm font-medium text-yellow-800">Complete Your Salon Profile</h3>
-                  <p className="text-sm text-yellow-700">Add your salon details to get started with QR codes and client sessions.</p>
+                  <p className="text-white font-medium">Complete your salon profile</p>
+                  <p className="text-white/70 text-sm">Add your salon details to get started</p>
                 </div>
               </div>
               <button
                 onClick={() => setShowProfileForm(true)}
-                className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors text-sm font-medium"
+                className="bg-yellow-500 text-black px-4 py-2 rounded-full font-medium hover:bg-yellow-400 transition-colors"
               >
                 Complete Profile
               </button>
@@ -339,262 +389,176 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Profile Completion Form Modal */}
-      {showProfileForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
-            <form onSubmit={handleProfileSubmit} className="p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Complete Your Salon Profile</h2>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Salon Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={profileForm.name}
-                    onChange={(e) => setProfileForm({...profileForm, name: e.target.value})}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="Enter your salon name"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    City *
-                  </label>
-                  <input
-                    type="text"
-                    value={profileForm.city}
-                    onChange={(e) => setProfileForm({...profileForm, city: e.target.value})}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="Enter your city"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Address *
-                  </label>
-                  <input
-                    type="text"
-                    value={profileForm.address}
-                    onChange={(e) => setProfileForm({...profileForm, address: e.target.value})}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="Enter your full address"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-3 mt-6">
-                <button
-                  type="submit"
-                  className="flex-1 bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors font-medium"
-                >
-                  Save Profile
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowProfileForm(false)}
-                  className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition-colors font-medium"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="border-b border-gray-200">
-          <nav className="-mb-px flex space-x-8">
+      {/* Navigation Tabs */}
+      <div className="relative z-30 bg-black/10 backdrop-blur-sm border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex space-x-8">
             {[
-              { id: 'overview', name: 'Overview', icon: BarChart3 },
-              { id: 'analytics', name: 'Analytics', icon: TrendingUp },
-              { id: 'settings', name: 'Settings', icon: Settings },
+              { id: 'overview', label: 'Overview', icon: BarChart3 },
+              { id: 'analytics', label: 'Analytics', icon: TrendingUp },
+              { id: 'settings', label: 'Settings', icon: Settings }
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
+                className={`flex items-center space-x-2 py-4 px-2 border-b-2 transition-colors ${
                   activeTab === tab.id
-                    ? 'border-purple-500 text-purple-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-purple-400 text-white'
+                    : 'border-transparent text-white/60 hover:text-white'
                 }`}
               >
-                <tab.icon className="w-4 h-4" />
-                <span>{tab.name}</span>
+                <tab.icon className="w-5 h-5" />
+                <span className="font-medium">{tab.label}</span>
               </button>
             ))}
-          </nav>
+          </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Main Content */}
+      <div className="relative max-w-7xl mx-auto px-6 py-8">
+        
         {/* Overview Tab */}
         {activeTab === 'overview' && (
           <div className="space-y-8">
-            {/* Free Trial Status */}
-            <div className="bg-gradient-to-r from-green-100 to-blue-100 border border-green-200 rounded-xl p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-green-800">Free Trial Active</h3>
-                  <p className="text-green-700">
-                    {salon?.free_trial_generations || 10} AI generations remaining
-                  </p>
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-green-600">
-                    {salon?.free_trial_generations || 10}
+            {/* Stats Cards */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-6">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+                    <Users className="w-6 h-6 text-white" />
                   </div>
-                  <div className="text-sm text-green-600">Credits Left</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Simple Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <Users className="h-8 w-8 text-blue-600" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">Clients Today</p>
-                    <p className="text-2xl font-semibold text-gray-900">0</p>
+                  <div>
+                    <p className="text-white/60 text-sm">Total Sessions</p>
+                    <p className="text-white text-2xl font-bold">{analytics?.total_sessions || 0}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <Zap className="h-8 w-8 text-yellow-600" />
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-6">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                    <Zap className="w-6 h-6 text-white" />
                   </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">Credits Used</p>
-                    <p className="text-2xl font-semibold text-gray-900">
-                      {salon?.total_ai_generations_used || 0}
-                    </p>
+                  <div>
+                    <p className="text-white/60 text-sm">AI Generations</p>
+                    <p className="text-white text-2xl font-bold">{salon?.total_ai_generations_used || 0}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <CreditCard className="h-8 w-8 text-green-600" />
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-6">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                    <CheckCircle className="w-6 h-6 text-white" />
                   </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">Subscription</p>
-                    <p className="text-lg font-semibold text-green-600">Free Trial</p>
+                  <div>
+                    <p className="text-white/60 text-sm">Free Trial Left</p>
+                    <p className="text-white text-2xl font-bold">{salon?.free_trial_generations || 0}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-6">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
+                    <Clock className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-white/60 text-sm">Session Duration</p>
+                    <p className="text-white text-2xl font-bold">{salon?.session_duration || 30}m</p>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* QR Code Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Your QR Code</h3>
-                <div className="text-center">
-                  {qrCodeUrl ? (
-                    <div>
-                      <img
-                        src={qrCodeUrl}
-                        alt="Salon QR Code"
-                        className="mx-auto mb-4 border rounded-lg"
-                        style={{ maxWidth: '200px' }}
-                      />
-                      <div className="space-y-2">
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-8">
+              <div className="grid lg:grid-cols-2 gap-8 items-center">
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-4">Your Salon QR Code</h2>
+                  <p className="text-white/70 mb-6">
+                    Clients scan this QR code to access your virtual hair try-on experience. 
+                    Print it and display it in your salon.
+                  </p>
+                  
+                  <div className="space-y-4">
+                    <button
+                      onClick={generateQRCode}
+                      className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-full font-semibold hover:from-purple-700 hover:to-pink-700 transition-all flex items-center space-x-2"
+                    >
+                      <QrCode className="w-5 h-5" />
+                      <span>Generate QR Code</span>
+                    </button>
+                    
+                    {/* URL Display and Mobile Testing Info */}
+                    {tryOnUrl && (
+                      <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                        <p className="text-white/80 text-sm font-medium mb-2">🔗 Client Access URL:</p>
+                        <p className="text-white/60 text-xs font-mono break-all bg-black/20 p-2 rounded">{tryOnUrl}</p>
+                        {tryOnUrl.includes('localhost') && (
+                          <div className="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                            <p className="text-yellow-400 text-xs font-medium">⚠️ Mobile Testing Issue</p>
+                            <p className="text-yellow-300/80 text-xs mt-1">
+                              This URL uses 'localhost' which won't work on mobile devices. 
+                              For mobile testing, the QR code should use your network IP (like 192.168.1.190:3000).
+                            </p>
+                          </div>
+                        )}
+                        {tryOnUrl.includes('192.168') && (
+                          <div className="mt-3 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+                            <p className="text-green-400 text-xs font-medium">✅ Mobile Ready</p>
+                            <p className="text-green-300/80 text-xs mt-1">
+                              This URL uses your network IP and will work on mobile devices on the same WiFi network.
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    {qrCodeUrl && (
+                      <div className="flex space-x-3">
                         <button
                           onClick={downloadQRCode}
-                          className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors mr-2"
+                          className="bg-white/10 backdrop-blur-sm border border-white/20 text-white px-4 py-2 rounded-full font-medium hover:bg-white/20 transition-all flex items-center space-x-2"
                         >
-                          <Download className="w-4 h-4 inline mr-2" />
-                          Download
+                          <Download className="w-4 h-4" />
+                          <span>Download</span>
                         </button>
-                        <button
-                          onClick={generateQRCode}
-                          className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
-                        >
-                          Regenerate
-                        </button>
+                        
+                        {tryOnUrl && (
+                          <a
+                            href={tryOnUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-white/10 backdrop-blur-sm border border-white/20 text-white px-4 py-2 rounded-full font-medium hover:bg-white/20 transition-all flex items-center space-x-2"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                            <span>Test</span>
+                          </a>
+                        )}
                       </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="text-center">
+                  {qrCodeUrl ? (
+                    <div className="bg-white p-6 rounded-2xl inline-block">
+                      <img 
+                        src={qrCodeUrl} 
+                        alt="Salon QR Code" 
+                        className="w-48 h-48 mx-auto"
+                      />
+                      <p className="text-gray-600 text-sm mt-2">{salon?.name}</p>
                     </div>
                   ) : (
-                    <div>
-                      <QrCode className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                      <button
-                        onClick={generateQRCode}
-                        className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors"
-                      >
-                        Generate QR Code
-                      </button>
+                    <div className="bg-white/10 backdrop-blur-sm border-2 border-dashed border-white/30 rounded-2xl p-12">
+                      <QrCode className="w-16 h-16 text-white/40 mx-auto mb-4" />
+                      <p className="text-white/60">Generate your QR code to get started</p>
                     </div>
                   )}
                 </div>
-              </div>
-
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Try-On URL</h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Direct Link
-                    </label>
-                    <div className="flex">
-                      <input
-                        type="text"
-                        value={tryOnUrl || 'Generate QR code first'}
-                        readOnly
-                        className="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 bg-gray-50"
-                      />
-                      <button
-                        onClick={() => tryOnUrl && navigator.clipboard.writeText(tryOnUrl)}
-                        className="bg-gray-600 text-white px-4 py-2 rounded-r-lg hover:bg-gray-700 transition-colors"
-                      >
-                        Copy
-                      </button>
-                    </div>
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    <p>• Display this QR code in your salon</p>
-                    <p>• Clients scan to start their try-on session</p>
-                    <p>• Sessions last {salon?.session_duration || 30} minutes</p>
-                    <p>• Each session allows {salon?.max_ai_uses || 5} AI generations</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Popular Styles */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Popular Styles This Week</h3>
-              <div className="space-y-3">
-                {analytics?.popular_styles?.slice(0, 5).map((style, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
-                        <span className="text-purple-600 font-semibold text-sm">{index + 1}</span>
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">{style.style_name}</p>
-                        <p className="text-sm text-gray-500 capitalize">{style.category}</p>
-                      </div>
-                    </div>
-                    <span className="text-sm font-medium text-gray-600">
-                      {style.usage_count} uses
-                    </span>
-                  </div>
-                )) || (
-                  <p className="text-gray-500 text-center py-4">No data available yet</p>
-                )}
               </div>
             </div>
           </div>
@@ -603,46 +567,14 @@ export default function Dashboard() {
         {/* Analytics Tab */}
         {activeTab === 'analytics' && (
           <div className="space-y-8">
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Usage Over Time</h3>
-              <div className="h-64 flex items-center justify-center text-gray-500">
-                <div className="text-center">
-                  <BarChart3 className="w-12 h-12 mx-auto mb-2 text-gray-400" />
-                  <p>Chart visualization would go here</p>
-                  <p className="text-sm">Integrate with a charting library like Chart.js or Recharts</p>
-                </div>
+            <div className="text-center py-16">
+              <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <BarChart3 className="w-8 h-8 text-white/60" />
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Category Breakdown</h3>
-                <div className="space-y-3">
-                  {Object.entries(analytics?.category_usage || {}).map(([category, count]) => (
-                    <div key={category} className="flex items-center justify-between">
-                      <span className="capitalize text-gray-700">{category}</span>
-                      <span className="font-medium">{count}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
-                <div className="space-y-3">
-                  {analytics?.daily_usage?.slice(-7).map((day, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                      <span className="text-gray-700">{day.date}</span>
-                      <div className="text-right">
-                        <div className="text-sm font-medium">{day.sessions} sessions</div>
-                        <div className="text-xs text-gray-500">{day.ai_uses} AI uses</div>
-                      </div>
-                    </div>
-                  )) || (
-                    <p className="text-gray-500 text-center py-4">No recent activity</p>
-                  )}
-                </div>
-              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">Analytics Coming Soon</h2>
+              <p className="text-white/70">
+                Detailed analytics and insights will be available in the next update.
+              </p>
             </div>
           </div>
         )}
@@ -650,90 +582,208 @@ export default function Dashboard() {
         {/* Settings Tab */}
         {activeTab === 'settings' && (
           <div className="space-y-8">
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Session Settings</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Session Duration (minutes)
-                  </label>
-                  <input
-                    type="number"
-                    value={salon?.session_duration || 30}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                    min="5"
-                    max="120"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    How long each client session lasts
-                  </p>
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-8">
+              <h2 className="text-2xl font-bold text-white mb-6">Salon Settings</h2>
+              
+              <div className="space-y-6">
+                <div className="flex items-center justify-between p-4 bg-white/10 rounded-xl border border-white/20">
+                  <div>
+                    <h3 className="text-white font-medium">Salon Information</h3>
+                    <p className="text-white/60 text-sm">Update your salon name and location</p>
+                    {salon?.name && (
+                      <div className="mt-2 text-sm text-white/80">
+                        <p><strong>{salon.name}</strong></p>
+                        {salon.city && <p>{salon.city}</p>}
+                        {salon.address && <p>{salon.address}</p>}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => {
+                      // Pre-populate form with current salon data
+                      setProfileForm({
+                        name: salon?.name || '',
+                        city: salon?.city || '',
+                        address: salon?.address || ''
+                      })
+                      setShowProfileForm(true)
+                    }}
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-full font-medium hover:from-purple-700 hover:to-pink-700 transition-all flex items-center space-x-2"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                    <span>Edit</span>
+                  </button>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Max AI Uses per Session
-                  </label>
-                  <input
-                    type="number"
-                    value={salon?.max_ai_uses || 5}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                    min="1"
-                    max="20"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    How many styles clients can try per session
-                  </p>
+                <div className="flex items-center justify-between p-4 bg-white/10 rounded-xl border border-white/20">
+                  <div>
+                    <h3 className="text-white font-medium">Session Settings</h3>
+                    <p className="text-white/60 text-sm">Configure client session limits</p>
+                    <div className="mt-2 text-sm text-white/80">
+                      <p>Duration: <strong>{salon?.session_duration || 30} minutes</strong></p>
+                      <p>AI Uses: <strong>{salon?.max_ai_uses || 20} transformations</strong></p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      // Pre-populate form with current settings
+                      setSettingsForm({
+                        session_duration: salon?.session_duration || 30,
+                        max_ai_uses: salon?.max_ai_uses || 20
+                      })
+                      setShowSettingsForm(true)
+                    }}
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-full font-medium hover:from-purple-700 hover:to-pink-700 transition-all flex items-center space-x-2"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                    <span>Edit</span>
+                  </button>
                 </div>
-              </div>
-
-              <div className="mt-6 flex gap-4">
-                <button className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors">
-                  Save Settings
-                </button>
-                <button 
-                  onClick={handleLogout}
-                  className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  Logout
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Salon Information</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Salon Name
-                  </label>
-                  <input
-                    type="text"
-                    value={salon?.name || ''}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    value={salon?.email || ''}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                  />
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <button className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors">
-                  Update Information
-                </button>
               </div>
             </div>
           </div>
         )}
       </div>
+
+      {/* Profile Form Modal */}
+      {showProfileForm && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-8 max-w-md w-full">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-white">Complete Your Profile</h2>
+              <button
+                onClick={() => setShowProfileForm(false)}
+                className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleProfileSubmit} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-white/90 mb-2">
+                  Salon Name *
+                </label>
+                <input
+                  type="text"
+                  value={profileForm.name}
+                  onChange={(e) => setProfileForm({...profileForm, name: e.target.value})}
+                  required
+                  className="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/50 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  placeholder="Your Salon Name"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-white/90 mb-2">
+                  City *
+                </label>
+                <input
+                  type="text"
+                  value={profileForm.city}
+                  onChange={(e) => setProfileForm({...profileForm, city: e.target.value})}
+                  required
+                  className="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/50 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  placeholder="City"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-white/90 mb-2">
+                  Address *
+                </label>
+                <input
+                  type="text"
+                  value={profileForm.address}
+                  onChange={(e) => setProfileForm({...profileForm, address: e.target.value})}
+                  required
+                  className="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/50 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  placeholder="Full Address"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-full font-semibold hover:from-purple-700 hover:to-pink-700 transition-all flex items-center justify-center space-x-2"
+              >
+                <span>Save Profile</span>
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Settings Form Modal */}
+      {showSettingsForm && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-8 max-w-md w-full">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-white">Session Settings</h2>
+              <button
+                onClick={() => setShowSettingsForm(false)}
+                className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSettingsSubmit} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-white/90 mb-2">
+                  Session Duration (minutes) *
+                </label>
+                <input
+                  type="number"
+                  min="5"
+                  max="120"
+                  value={settingsForm.session_duration}
+                  onChange={(e) => setSettingsForm({...settingsForm, session_duration: parseInt(e.target.value)})}
+                  required
+                  className="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/50 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  placeholder="30"
+                />
+                <p className="text-white/60 text-xs mt-1">How long clients can use the try-on (5-120 minutes)</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-white/90 mb-2">
+                  AI Transformations per Session *
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="50"
+                  value={settingsForm.max_ai_uses}
+                  onChange={(e) => setSettingsForm({...settingsForm, max_ai_uses: parseInt(e.target.value)})}
+                  required
+                  className="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/50 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  placeholder="20"
+                />
+                <p className="text-white/60 text-xs mt-1">Maximum AI transformations per client (1-50 uses)</p>
+              </div>
+
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                <h3 className="text-white font-medium mb-2">💡 Recommendations:</h3>
+                <ul className="text-white/70 text-sm space-y-1">
+                  <li>• <strong>Session Duration:</strong> 30-45 minutes for busy salons</li>
+                  <li>• <strong>AI Uses:</strong> 15-25 transformations per client</li>
+                  <li>• Higher limits = better client experience</li>
+                  <li>• Lower limits = more efficient turnover</li>
+                </ul>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-full font-semibold hover:from-purple-700 hover:to-pink-700 transition-all flex items-center justify-center space-x-2"
+              >
+                <span>Save Settings</span>
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
