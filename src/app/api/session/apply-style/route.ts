@@ -66,10 +66,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log('Processing hair transformation:', {
+    console.log('🔍 Processing hair transformation:', {
       session_id: session_token,
       style_name: style.name,
-      category: style.category
+      category: style.category,
+      style_prompt: style.prompt
     })
 
     // 3. Upload original image to Supabase Storage
@@ -100,6 +101,7 @@ export async function POST(request: NextRequest) {
     let generatedImageUrl: string
     let usedAI = false
     let aiError: string | undefined
+    let aiPromptUsed: string | undefined
     
     if (process.env.GEMINI_API_KEY) {
       console.log('🎨 Processing with Gemini 2.5 Flash Image (Nano Banana):', {
@@ -126,6 +128,7 @@ export async function POST(request: NextRequest) {
           generatedImageUrl = aiResult.imageUrl
           usedAI = aiResult.usedAI
           aiError = aiResult.error
+          aiPromptUsed = aiResult.prompt
           console.log(`✅ Hair transformation completed! AI: ${usedAI}`)
         } else {
           throw new Error(aiResult.error || 'Hair transformation failed')
@@ -177,7 +180,8 @@ export async function POST(request: NextRequest) {
         used_ai: usedAI,
         error: aiError,
         model: usedAI ? 'gemini-2.5-flash-image-preview' : 'demo',
-        note: usedAI ? 'Powered by Google Gemini Nano Banana' : 'Enable billing for AI transformations'
+        note: usedAI ? 'Powered by Google Gemini Nano Banana' : 'Enable billing for AI transformations',
+        prompt_used: aiPromptUsed
       },
       style: {
         id: style_id,

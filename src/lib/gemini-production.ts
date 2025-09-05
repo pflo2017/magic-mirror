@@ -129,22 +129,51 @@ export async function transformHairWithGemini(
 /**
  * Create enhanced hair transformation prompt following Google's best practices
  */
-function createHairTransformationPrompt(stylePrompt: string): string {
-  return `MANDATORY INSTRUCTION: Generate an image transformation. Follow these commands EXACTLY without deviation:
+function createHairTransformationPrompt(stylePrompt: string | any): string {
+  // Parse the style prompt to extract the actual instruction
+  let instruction = stylePrompt;
+  
+  // Handle different input types
+  if (typeof stylePrompt === 'object') {
+    // If it's already an object (from database JSON field)
+    instruction = stylePrompt.instruction || stylePrompt.prompt || JSON.stringify(stylePrompt);
+  } else if (typeof stylePrompt === 'string') {
+    // If it's a JSON string, parse it
+    try {
+      const parsed = JSON.parse(stylePrompt);
+      instruction = parsed.instruction || parsed.prompt || stylePrompt;
+      
+      // Handle double-nested instruction objects
+      if (typeof instruction === 'object' && instruction.instruction) {
+        instruction = instruction.instruction;
+      }
+    } catch {
+      // If not JSON, use as-is
+      instruction = stylePrompt;
+    }
+  }
 
-TASK: ${stylePrompt}
+  // Ensure instruction is a string
+  if (typeof instruction !== 'string') {
+    instruction = JSON.stringify(instruction);
+  }
 
-ABSOLUTE REQUIREMENTS:
-• If the task mentions "platinum blonde" → Make hair PLATINUM BLONDE (very light, almost white)
-• If the task says "keep same hairstyle" → DO NOT change hair length, cut, or style
-• If the task says "only hair color" → Change ONLY the hair color, nothing else
-• NEVER change: face, skin, eyes, facial features, expression, background, clothing
-• NEVER add artistic effects or interpretations
-• NEVER be creative - follow the exact instruction word-for-word
+  // Log the instruction for debugging
+  console.log('🎯 AI Instruction:', instruction);
+  console.log('🔍 Original stylePrompt:', stylePrompt);
 
-EXAMPLE: If told "change hair to platinum blonde, keep same style" → Result must have PLATINUM BLONDE hair (not red, not brown) with identical hairstyle, face, and everything else.
+  return `You are a professional hair stylist AI. Transform ONLY the hair in this image according to the exact specification below.
 
-GENERATE IMAGE NOW: Create the exact transformation requested above.`
+TRANSFORMATION TASK:
+${instruction}
+
+CRITICAL RULES:
+1. READ THE TASK CAREFULLY - if it says "pixie cut" then create a pixie cut, if it says "change color to red" then only change the color
+2. PRESERVE EVERYTHING ELSE - Keep the person's face, skin, eyes, expression, background, and clothing exactly identical
+3. ONLY MODIFY THE HAIR - Do not change any other aspect of the image
+4. FOLLOW THE INSTRUCTION PRECISELY - Do not add your own creative interpretation
+
+Generate the transformed image now.`
 }
 
 /**

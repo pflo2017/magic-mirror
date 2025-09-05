@@ -27,8 +27,8 @@ export class QRCodeManager {
         throw new Error('Salon not found')
       }
 
-      // Generate the try-on URL
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+      // Generate the try-on URL - use network IP for mobile access
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://192.168.1.190:3000'
       const tryOnUrl = `${baseUrl}/salon/${salonId}/tryon`
 
       // Configure QR code options
@@ -105,7 +105,7 @@ export class QRCodeManager {
         throw new Error('Salon not found')
       }
 
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://192.168.1.190:3000'
       const tryOnUrl = `${baseUrl}/salon/${salonId}/tryon`
 
       // For branded QR codes, you would typically use a more advanced library
@@ -178,7 +178,7 @@ export class QRCodeManager {
         throw new Error('Salon not found')
       }
 
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://192.168.1.190:3000'
       const tryOnUrl = `${baseUrl}/salon/${salonId}/tryon`
 
       const qrOptions = {
@@ -215,7 +215,7 @@ export class QRCodeManager {
         throw new Error('Salon not found')
       }
 
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://192.168.1.190:3000'
       const tryOnUrl = `${baseUrl}/salon/${salonId}/tryon`
 
       return {
@@ -260,7 +260,7 @@ export class QRCodeManager {
         throw new Error('Salon not found')
       }
 
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://192.168.1.190:3000'
       const tryOnUrl = `${baseUrl}/salon/${salonId}/tryon`
 
       // Size configurations
@@ -346,7 +346,7 @@ export class QRCodeManager {
 
 // Utility functions
 export function generateTryOnUrl(salonId: string): string {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://192.168.1.190:3000'
   return `${baseUrl}/salon/${salonId}/tryon`
 }
 

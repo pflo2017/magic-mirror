@@ -1,6 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import QRCode from 'qrcode'
 
+// Function to get the base URL from request headers
+function getBaseUrl(request: NextRequest): string {
+  // Try to get the host from headers
+  const host = request.headers.get('host')
+  const protocol = request.headers.get('x-forwarded-proto') || 'http'
+  
+  if (host) {
+    // If host is localhost, replace with network IP for mobile access
+    if (host.includes('localhost') || host.includes('127.0.0.1')) {
+      return `${protocol}://192.168.1.190:3000`
+    }
+    return `${protocol}://${host}`
+  }
+  
+  // Fallback to environment variable or default network IP
+  return process.env.NEXT_PUBLIC_APP_URL || 'http://192.168.1.190:3000'
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { salon_id, salon_name } = await request.json()
@@ -12,9 +30,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Generate the try-on URL using salon_id directly
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://192.168.0.80:3000'
+    // Generate the try-on URL using dynamic base URL
+    const baseUrl = getBaseUrl(request)
     const tryOnUrl = `${baseUrl}/salon/${salon_id}/tryon`
+    
+    // Debug logging
+    console.log('🔗 QR Code Generation:', {
+      host: request.headers.get('host'),
+      protocol: request.headers.get('x-forwarded-proto'),
+      baseUrl,
+      tryOnUrl
+    })
 
     // Generate QR code as data URL
     const qrCodeDataUrl = await QRCode.toDataURL(tryOnUrl, {
@@ -56,8 +82,8 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Generate the try-on URL
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://192.168.0.80:3000'
+    // Generate the try-on URL using dynamic base URL
+    const baseUrl = getBaseUrl(request)
     const tryOnUrl = `${baseUrl}/salon/${salon_id}/tryon`
 
     // Generate QR code as data URL
