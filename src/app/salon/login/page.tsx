@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Scissors, Eye, EyeOff } from 'lucide-react'
+import { Sparkles, Eye, EyeOff, ArrowRight } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 export default function SalonLogin() {
@@ -89,39 +89,50 @@ export default function SalonLogin() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
-      {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <Link href="/" className="flex items-center space-x-2">
-              <Scissors className="h-8 w-8 text-purple-600" />
-              <h1 className="text-2xl font-bold text-gray-900">Magic Mirror</h1>
-            </Link>
-            <Link href="/salon/signup" className="text-purple-600 hover:text-purple-700 font-medium">
-              Don't have an account? Sign up
-            </Link>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      {/* Background Effects */}
+      <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-pink-600/20 blur-3xl"></div>
+      <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-purple-500/30 rounded-full blur-3xl animate-pulse"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
 
-      <div className="flex items-center justify-center py-12 px-4">
+      {/* Navigation */}
+      <nav className="relative z-50 flex justify-between items-center p-6 max-w-7xl mx-auto">
+        <Link href="/" className="flex items-center space-x-2">
+          <div className="relative">
+            <Sparkles className="h-8 w-8 text-purple-400" />
+            <div className="absolute inset-0 h-8 w-8 text-purple-400 animate-pulse opacity-50">
+              <Sparkles className="h-8 w-8" />
+            </div>
+          </div>
+          <span className="text-2xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
+            Magic Mirror
+          </span>
+        </Link>
+        <Link 
+          href="/salon/signup" 
+          className="text-white/80 hover:text-white font-medium transition-colors"
+        >
+          Don't have an account? Sign up
+        </Link>
+      </nav>
+
+      <div className="relative flex items-center justify-center py-12 px-4">
         <div className="max-w-md w-full">
-          <div className="bg-white rounded-2xl shadow-xl p-8">
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-8">
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h2>
-              <p className="text-gray-600">Sign in to your salon dashboard</p>
+              <h2 className="text-3xl font-bold text-white mb-2">Welcome Back</h2>
+              <p className="text-white/70">Sign in to your salon dashboard</p>
             </div>
 
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                <p className="text-red-800 text-sm">{error}</p>
+              <div className="bg-red-500/20 backdrop-blur-sm border border-red-400/30 rounded-lg p-4 mb-6">
+                <p className="text-red-200 text-sm">{error}</p>
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-white/90 mb-2">
                   Email Address
                 </label>
                 <input
@@ -130,13 +141,13 @@ export default function SalonLogin() {
                   value={formData.email}
                   onChange={handleInputChange}
                   required
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/50 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                   placeholder="owner@salon.com"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-white/90 mb-2">
                   Password
                 </label>
                 <div className="relative">
@@ -146,13 +157,13 @@ export default function SalonLogin() {
                     value={formData.password}
                     onChange={handleInputChange}
                     required
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 pr-12 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg px-4 py-3 pr-12 text-white placeholder-white/50 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                     placeholder="Enter your password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white transition-colors"
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -163,11 +174,11 @@ export default function SalonLogin() {
                 <label className="flex items-center">
                   <input
                     type="checkbox"
-                    className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                    className="rounded border-white/20 bg-white/10 text-purple-600 focus:ring-purple-500 focus:ring-offset-0"
                   />
-                  <span className="ml-2 text-sm text-gray-600">Remember me</span>
+                  <span className="ml-2 text-sm text-white/70">Remember me</span>
                 </label>
-                <Link href="/salon/forgot-password" className="text-sm text-purple-600 hover:text-purple-700">
+                <Link href="/salon/forgot-password" className="text-sm text-purple-300 hover:text-purple-200 transition-colors">
                   Forgot password?
                 </Link>
               </div>
@@ -175,15 +186,18 @@ export default function SalonLogin() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors font-semibold disabled:bg-gray-400 flex items-center justify-center"
+                className="group w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-full hover:from-purple-700 hover:to-pink-700 transition-all transform hover:scale-105 font-semibold disabled:opacity-50 disabled:transform-none flex items-center justify-center space-x-2 shadow-xl"
               >
                 {isSubmitting ? (
                   <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    Signing in...
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    <span>Signing in...</span>
                   </>
                 ) : (
-                  'Sign In'
+                  <>
+                    <span>Sign In</span>
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </>
                 )}
               </button>
             </form>
@@ -191,17 +205,17 @@ export default function SalonLogin() {
             <div className="mt-8 text-center">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300" />
+                  <div className="w-full border-t border-white/20" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                  <span className="px-2 bg-slate-900 text-white/60">Or continue with</span>
                 </div>
               </div>
 
               <div className="mt-6 grid grid-cols-2 gap-3">
                 <button 
                   onClick={handleGoogleLogin}
-                  className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors"
+                  className="w-full inline-flex justify-center py-2 px-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-sm font-medium text-white/80 hover:bg-white/20 transition-all"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -214,7 +228,7 @@ export default function SalonLogin() {
 
                 <button 
                   onClick={handleFacebookLogin}
-                  className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors"
+                  className="w-full inline-flex justify-center py-2 px-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-sm font-medium text-white/80 hover:bg-white/20 transition-all"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
@@ -225,9 +239,9 @@ export default function SalonLogin() {
             </div>
 
             <div className="mt-8 text-center">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-white/60">
                 New to Magic Mirror?{' '}
-                <Link href="/salon/signup" className="text-purple-600 hover:text-purple-700 font-medium">
+                <Link href="/salon/signup" className="text-purple-300 hover:text-purple-200 font-medium transition-colors">
                   Create an account
                 </Link>
               </p>

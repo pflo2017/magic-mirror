@@ -80,3 +80,4 @@ REDIS_URL=redis://your-upstash-url-here
 ```
 
 That's it! 🚀
+
