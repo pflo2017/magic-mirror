@@ -86,3 +86,4 @@ CREATE POLICY "Salon owners can delete their logos" ON storage.objects
     bucket_id = 'salon-logos' AND 
     auth.role() = 'authenticated'
   );
+

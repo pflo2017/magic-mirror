@@ -46,3 +46,4 @@ export async function GET(request: NextRequest) {
   // If no code or error, redirect to login
   return NextResponse.redirect(`${origin}/salon/login?error=no_code`)
 }
+

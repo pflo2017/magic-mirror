@@ -112,3 +112,4 @@ CREATE TRIGGER trigger_update_cache_access
 GRANT SELECT ON cache_stats TO authenticated, anon;
 GRANT EXECUTE ON FUNCTION cleanup_old_cache_entries(INTEGER) TO service_role;
 GRANT EXECUTE ON FUNCTION get_cache_hit_rate(INTEGER) TO authenticated, service_role;
+

@@ -1,6 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-server'
 
+// Function to geocode address (for future map feature)
+async function geocodeAddress(address: string, city: string): Promise<{ lat: number; lng: number } | null> {
+  try {
+    // For now, return null - in production, you would use Google Maps Geocoding API
+    // const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(`${address}, ${city}`)}&key=${process.env.GOOGLE_MAPS_API_KEY}`)
+    // const data = await response.json()
+    // if (data.results && data.results.length > 0) {
+    //   const location = data.results[0].geometry.location
+    //   return { lat: location.lat, lng: location.lng }
+    // }
+    return null
+  } catch (error) {
+    console.error('Geocoding error:', error)
+    return null
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { salon_name, location, city, address, user_id, email } = await request.json()
@@ -28,17 +45,31 @@ export async function POST(request: NextRequest) {
       .eq('auth_user_id', user_id)
       .single()
 
+    // Geocode address for future map feature (if both city and address are provided)
+    let coordinates = null
+    if (city?.trim() && address?.trim()) {
+      coordinates = await geocodeAddress(address.trim(), city.trim())
+    }
+
     let result
     if (existingSalon) {
       // Update existing salon
+      const updateData: any = {
+        name: salon_name.trim(),
+        location: location?.trim() || null,
+        city: city?.trim() || null,
+        address: address?.trim() || null
+      }
+
+      // Add coordinates if available (for future map feature)
+      if (coordinates) {
+        updateData.latitude = coordinates.lat
+        updateData.longitude = coordinates.lng
+      }
+
       const { data, error } = await supabaseAdmin
         .from('salons')
-        .update({
-          name: salon_name.trim(),
-          location: location?.trim() || null,
-          city: city?.trim() || null,
-          address: address?.trim() || null
-        })
+        .update(updateData)
         .eq('auth_user_id', user_id)
         .select()
         .single()
@@ -53,22 +84,30 @@ export async function POST(request: NextRequest) {
       result = data
     } else {
       // Create new salon
+      const insertData: any = {
+        auth_user_id: user_id,
+        email: email || `${user_id}@temp.com`,
+        name: salon_name.trim(),
+        location: location?.trim() || null,
+        city: city?.trim() || null,
+        address: address?.trim() || null,
+        subscription_status: 'active',
+        subscription_plan: 'starter',
+        max_ai_uses: 20, // 20 AI transformations per client session
+        session_duration: 30, // 30 minutes per session
+        total_ai_generations_used: 0,
+        free_trial_generations: 10
+      }
+
+      // Add coordinates if available (for future map feature)
+      if (coordinates) {
+        insertData.latitude = coordinates.lat
+        insertData.longitude = coordinates.lng
+      }
+
       const { data, error } = await supabaseAdmin
         .from('salons')
-        .insert({
-          auth_user_id: user_id,
-          email: email || `${user_id}@temp.com`,
-          name: salon_name.trim(),
-          location: location?.trim() || null,
-          city: city?.trim() || null,
-          address: address?.trim() || null,
-          subscription_status: 'active',
-          subscription_plan: 'starter',
-          max_ai_uses: 100,
-          session_duration: 30,
-          total_ai_generations_used: 0,
-          free_trial_generations: 10
-        })
+        .insert(insertData)
         .select()
         .single()
 

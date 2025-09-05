@@ -53,3 +53,4 @@ WHERE name = 'Goatee' AND category = 'men_beards';
 
 UPDATE styles SET image_url = 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=300&h=300&fit=crop&crop=face' 
 WHERE name = 'Stubble' AND category = 'men_beards';
+

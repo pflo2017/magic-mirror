@@ -32,3 +32,4 @@ INSERT INTO styles (category, name, description, prompt, is_active) VALUES
 ('men_beards', 'Full Beard', 'Well-groomed full beard', '{"instruction": "Add a well-groomed full beard that complements the face shape. Keep all facial features, skin tone, eye color, and bone structure exactly the same. Only add facial hair."}', true),
 ('men_beards', 'Goatee', 'Classic goatee style', '{"instruction": "Add a neat goatee (chin beard with mustache). Preserve the person''s face shape, skin tone, eye color, and all facial features. Only add the goatee facial hair."}', true),
 ('men_beards', 'Stubble', 'Light stubble beard', '{"instruction": "Add light stubble across the jaw and chin area. Keep all facial features, skin tone, eye color, and bone structure identical. Only add the stubble effect."}', true);
+
