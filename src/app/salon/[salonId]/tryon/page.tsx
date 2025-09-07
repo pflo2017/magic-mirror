@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
-import { Camera, Upload, Sparkles, ArrowLeft, Download, Share2, Clock, RotateCcw, Palette, User, Scissors, ChevronRight, ChevronDown, Play, Pause, Volume2, VolumeX } from 'lucide-react'
+import { Camera, Upload, Sparkles, ArrowLeft, Download, Share2, Clock, RotateCcw, Palette, User, Scissors, ChevronRight, ChevronDown, Play, Pause, Volume2, VolumeX, X, Maximize2, MessageCircle, Instagram, Facebook, Mail } from 'lucide-react'
 
 interface Style {
   id: string
@@ -40,6 +40,9 @@ export default function ClientTryOnInterface() {
   const [resultImage, setResultImage] = useState<string | null>(null)
   const [showPrompt, setShowPrompt] = useState(false)
   const [aiPromptUsed, setAiPromptUsed] = useState<string | null>(null)
+  const [showImageModal, setShowImageModal] = useState(false)
+  const [modalImage, setModalImage] = useState<{src: string, alt: string} | null>(null)
+  const [showShareModal, setShowShareModal] = useState(false)
   
   // Async processing state
   const [currentJobId, setCurrentJobId] = useState<string | null>(null)
@@ -78,7 +81,7 @@ export default function ClientTryOnInterface() {
     }
   }, [selectedGender, selectedCategory, styles])
 
-  // Session timer
+  // Session timer and validation
   useEffect(() => {
     if (sessionToken && sessionTime > 0) {
       const timer = setInterval(() => {
@@ -91,9 +94,41 @@ export default function ClientTryOnInterface() {
           return prev - 1
         })
       }, 1000)
-      return () => clearInterval(timer)
+
+      // Validate session every 30 seconds to get updated credits
+      const validationTimer = setInterval(() => {
+        validateSession()
+      }, 30000)
+
+      return () => {
+        clearInterval(timer)
+        clearInterval(validationTimer)
+      }
     }
   }, [sessionToken, sessionTime])
+
+  const validateSession = async () => {
+    if (!sessionToken) return
+
+    try {
+      const response = await fetch('/api/session/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_token: sessionToken })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setCreditsLeft(data.session.ai_uses_remaining)
+        setSessionTime(data.session.time_remaining)
+      } else if (response.status === 401) {
+        setSessionError('Session expired! Please ask your stylist for a new QR code.')
+        setSessionToken(null)
+      }
+    } catch (error) {
+      console.error('Session validation error:', error)
+    }
+  }
 
   const initializeSession = async () => {
     try {
@@ -105,10 +140,13 @@ export default function ClientTryOnInterface() {
 
       if (response.ok) {
         const data = await response.json()
+        console.log('🔄 Session initialized:', data)
         setSessionToken(data.session_token)
         setCreditsLeft(data.max_ai_uses)
         setSessionTime(data.session_duration * 60 || 15 * 60)
       } else {
+        const errorData = await response.json()
+        console.error('Session start failed:', errorData)
         setSessionError('Failed to start session')
       }
     } catch (error) {
@@ -281,7 +319,73 @@ export default function ClientTryOnInterface() {
     setResultImage(null)
     setAiPromptUsed(null)
     setShowPrompt(false)
+    setShowImageModal(false)
+    setModalImage(null)
+    setShowShareModal(false)
     setStep('welcome')
+  }
+
+  // Image expansion functionality
+  const openImageModal = (src: string, alt: string) => {
+    setModalImage({ src, alt })
+    setShowImageModal(true)
+  }
+
+  const closeImageModal = () => {
+    setShowImageModal(false)
+    setModalImage(null)
+  }
+
+  // Download functionality
+  const downloadImage = async (imageUrl: string, filename: string) => {
+    try {
+      const response = await fetch(imageUrl)
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      
+      const link = document.createElement('a')
+      link.href = url
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Download failed:', error)
+      alert('Failed to download image. Please try again.')
+    }
+  }
+
+  // Social sharing functionality
+  const shareToSocial = (platform: string) => {
+    if (!resultImage) return
+
+    const shareText = `Check out my new hairstyle transformation! 💇‍♀️✨`
+    const shareUrl = window.location.href
+    
+    let url = ''
+    
+    switch (platform) {
+      case 'whatsapp':
+        url = `https://wa.me/?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`
+        break
+      case 'facebook':
+        url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`
+        break
+      case 'instagram':
+        // Instagram doesn't support direct sharing via URL, so we'll copy to clipboard
+        navigator.clipboard.writeText(shareText + ' ' + shareUrl)
+        alert('Link copied to clipboard! You can now paste it in Instagram.')
+        return
+      case 'email':
+        url = `mailto:?subject=${encodeURIComponent('My Hair Transformation')}&body=${encodeURIComponent(shareText + '\n\n' + shareUrl)}`
+        break
+      default:
+        return
+    }
+    
+    window.open(url, '_blank', 'width=600,height=400')
   }
 
   if (isLoading) {
@@ -661,13 +765,21 @@ export default function ClientTryOnInterface() {
               <div className="grid grid-cols-2 gap-4 mb-8">
                 {/* Before */}
                 <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
-                  <div className="aspect-square rounded-xl overflow-hidden mb-3">
+                  <div 
+                    className="aspect-square rounded-xl overflow-hidden mb-3 cursor-pointer relative group"
+                    onClick={() => selectedImage && openImageModal(selectedImage, 'Before')}
+                  >
                     {selectedImage && (
-                      <img 
-                        src={selectedImage} 
-                        alt="Before"
-                        className="w-full h-full object-cover"
-                      />
+                      <>
+                        <img 
+                          src={selectedImage} 
+                          alt="Before"
+                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <Maximize2 className="w-6 h-6 text-white" />
+                        </div>
+                      </>
                     )}
                   </div>
                   <p className="text-white/70 text-center text-sm">Before</p>
@@ -675,38 +787,27 @@ export default function ClientTryOnInterface() {
 
                 {/* After */}
                 <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
-                  <div className="aspect-square rounded-xl overflow-hidden mb-3">
+                  <div 
+                    className="aspect-square rounded-xl overflow-hidden mb-3 cursor-pointer relative group"
+                    onClick={() => resultImage && openImageModal(resultImage, 'After')}
+                  >
                     {resultImage && (
-                      <img 
-                        src={resultImage} 
-                        alt="After"
-                        className="w-full h-full object-cover"
-                      />
+                      <>
+                        <img 
+                          src={resultImage} 
+                          alt="After"
+                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <Maximize2 className="w-6 h-6 text-white" />
+                        </div>
+                      </>
                     )}
                   </div>
                   <p className="text-white/70 text-center text-sm">After</p>
                 </div>
               </div>
 
-              {/* AI Prompt Display */}
-              {aiPromptUsed && (
-                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10 mb-6">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-white font-semibold text-sm">AI Prompt Used</h3>
-                    <button
-                      onClick={() => setShowPrompt(!showPrompt)}
-                      className="text-white/60 hover:text-white text-xs px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
-                    >
-                      {showPrompt ? 'Hide' : 'Show'}
-                    </button>
-                  </div>
-                  {showPrompt && (
-                    <div className="bg-black/20 rounded-lg p-3 text-white/80 text-xs font-mono leading-relaxed max-h-32 overflow-y-auto">
-                      {aiPromptUsed}
-                    </div>
-                  )}
-                </div>
-              )}
 
               {/* AI Prompt Display */}
               {(selectedStyle?.prompt || aiPromptUsed) && (
@@ -774,12 +875,18 @@ export default function ClientTryOnInterface() {
                 </button>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <button className="bg-white/10 backdrop-blur-sm border border-white/20 text-white py-3 rounded-xl font-medium hover:bg-white/20 transition-all flex items-center justify-center space-x-2">
+                  <button 
+                    onClick={() => resultImage && downloadImage(resultImage, `hair-transformation-${Date.now()}.jpg`)}
+                    className="bg-white/10 backdrop-blur-sm border border-white/20 text-white py-3 rounded-xl font-medium hover:bg-white/20 transition-all flex items-center justify-center space-x-2"
+                  >
                     <Download className="w-5 h-5" />
                     <span>Save</span>
                   </button>
                   
-                  <button className="bg-white/10 backdrop-blur-sm border border-white/20 text-white py-3 rounded-xl font-medium hover:bg-white/20 transition-all flex items-center justify-center space-x-2">
+                  <button 
+                    onClick={() => setShowShareModal(true)}
+                    className="bg-white/10 backdrop-blur-sm border border-white/20 text-white py-3 rounded-xl font-medium hover:bg-white/20 transition-all flex items-center justify-center space-x-2"
+                  >
                     <Share2 className="w-5 h-5" />
                     <span>Share</span>
                   </button>
@@ -797,6 +904,85 @@ export default function ClientTryOnInterface() {
 
         </div>
       </div>
+
+      {/* Image Modal */}
+      {showImageModal && modalImage && (
+        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
+          <div className="relative max-w-4xl max-h-full">
+            <button
+              onClick={closeImageModal}
+              className="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors"
+            >
+              <X className="w-8 h-8" />
+            </button>
+            <img
+              src={modalImage.src}
+              alt={modalImage.alt}
+              className="max-w-full max-h-[90vh] object-contain rounded-lg"
+            />
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 backdrop-blur-sm rounded-lg px-4 py-2">
+              <p className="text-white text-sm font-medium">{modalImage.alt}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-gray-900">Share Your Transformation</h3>
+              <button
+                onClick={() => setShowShareModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={() => shareToSocial('whatsapp')}
+                className="flex flex-col items-center p-4 bg-green-50 hover:bg-green-100 rounded-xl transition-colors"
+              >
+                <MessageCircle className="w-8 h-8 text-green-600 mb-2" />
+                <span className="text-sm font-medium text-green-700">WhatsApp</span>
+              </button>
+
+              <button
+                onClick={() => shareToSocial('facebook')}
+                className="flex flex-col items-center p-4 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors"
+              >
+                <Facebook className="w-8 h-8 text-blue-600 mb-2" />
+                <span className="text-sm font-medium text-blue-700">Facebook</span>
+              </button>
+
+              <button
+                onClick={() => shareToSocial('instagram')}
+                className="flex flex-col items-center p-4 bg-pink-50 hover:bg-pink-100 rounded-xl transition-colors"
+              >
+                <Instagram className="w-8 h-8 text-pink-600 mb-2" />
+                <span className="text-sm font-medium text-pink-700">Instagram</span>
+              </button>
+
+              <button
+                onClick={() => shareToSocial('email')}
+                className="flex flex-col items-center p-4 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors"
+              >
+                <Mail className="w-8 h-8 text-gray-600 mb-2" />
+                <span className="text-sm font-medium text-gray-700">Email</span>
+              </button>
+            </div>
+
+            <div className="mt-6 p-4 bg-gray-50 rounded-xl">
+              <p className="text-xs text-gray-600 text-center">
+                💡 Tip: For Instagram, the link will be copied to your clipboard. Paste it in your story or post!
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

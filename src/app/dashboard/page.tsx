@@ -74,6 +74,7 @@ export default function Dashboard() {
     session_duration: 30,
     max_ai_uses: 20
   })
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
 
   useEffect(() => {
     loadDashboardData()
@@ -291,7 +292,9 @@ export default function Dashboard() {
           } : prev)
         }
         
-        alert('Settings updated successfully!')
+        setShowSuccessModal(true)
+        // Auto-hide modal after 3 seconds
+        setTimeout(() => setShowSuccessModal(false), 3000)
       } else {
         const errorData = await response.json()
         alert(`Failed to update settings: ${errorData.error || 'Unknown error'}`)
@@ -781,6 +784,27 @@ export default function Dashboard() {
                 <ArrowRight className="w-5 h-5" />
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-8 max-w-md mx-auto text-center animate-in fade-in duration-300">
+            <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
+              <CheckCircle className="w-8 h-8 text-white" />
+            </div>
+            <h3 className="text-2xl font-bold text-white mb-3">Settings Updated!</h3>
+            <p className="text-white/80 mb-6">
+              Your session settings have been successfully updated and are now active for all new client sessions.
+            </p>
+            <button
+              onClick={() => setShowSuccessModal(false)}
+              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-full font-semibold hover:from-purple-700 hover:to-pink-700 transition-all"
+            >
+              Continue
+            </button>
           </div>
         </div>
       )}

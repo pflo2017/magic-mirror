@@ -59,7 +59,8 @@ export async function POST(request: NextRequest) {
       session_token: sessionToken,
       expires_at: expiresAt.toISOString(),
       max_ai_uses: salon.max_ai_uses || 5,
-      salon_id: salon_id
+      session_duration: salon.session_duration || 15,
+      salon_id: salon.id
     })
 
   } catch (error) {
