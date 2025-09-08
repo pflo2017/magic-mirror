@@ -1,0 +1,28 @@
+{
+  "additional_bangs": [
+    {
+      "name": "Blunt Bangs",
+      "description": "Straight, geometric cut bangs that create a bold, modern frame for the face",
+      "category": "women_hairstyles",
+      "instruction": "Create straight, blunt-cut bangs that fall just above the eyebrows. The bangs should be cut in a perfectly straight line across the forehead, creating a bold, geometric frame for the face. Keep the rest of the hairstyle exactly the same, only add these sharp, straight bangs. The bangs should be thick and full, covering the entire forehead width."
+    },
+    {
+      "name": "Wispy Bangs",
+      "description": "Soft, feathery bangs with a light, airy texture that gently frame the face",
+      "category": "women_hairstyles", 
+      "instruction": "Create soft, wispy bangs with a light, feathery texture. The bangs should be thin and delicate, with some pieces longer than others to create a soft, natural look. They should gently graze the eyebrows and have an airy, textured appearance. Keep the rest of the hairstyle unchanged, only add these soft, wispy bangs."
+    },
+    {
+      "name": "Micro Bangs",
+      "description": "Very short bangs that sit well above the eyebrows for a bold, edgy look",
+      "category": "women_hairstyles",
+      "instruction": "Create very short, micro bangs that sit well above the eyebrows - about halfway up the forehead. These bangs should be cut very short and straight across, creating a bold, edgy, avant-garde look. Keep the rest of the hairstyle exactly the same, only add these ultra-short bangs."
+    },
+    {
+      "name": "Choppy Bangs", 
+      "description": "Textured bangs with uneven, choppy pieces for a modern, edgy appearance",
+      "category": "women_hairstyles",
+      "instruction": "Create choppy, textured bangs with uneven pieces of different lengths. The bangs should have a deliberately messy, choppy texture with some pieces shorter and others longer, creating movement and an edgy, modern look. Keep the rest of the hairstyle unchanged, only add these textured, choppy bangs."
+    }
+  ]
+}

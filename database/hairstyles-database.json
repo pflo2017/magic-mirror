@@ -1,0 +1,126 @@
+{
+  "women_hairstyles": [
+    {
+      "id": "long-layers",
+      "name": "Long Layers",
+      "category": "long",
+      "subcategory": "layered",
+      "description": "Long layered hairstyle with cascading layers starting from the shoulders, creating movement and volume. Hair length extends to mid-back or longer with face-framing layers.",
+      "ai_instruction": "Create long layered hair extending to mid-back length. Add multiple layers starting from shoulder level, creating cascading volume and movement. Include face-framing layers around the cheekbones. Maintain natural hair texture with soft, flowing layers.",
+      "technical_specs": {
+        "length": "18-24 inches",
+        "layers": "multiple cascading layers",
+        "face_framing": true,
+        "volume": "high",
+        "maintenance": "medium"
+      },
+      "preview_image": "https://example.com/previews/long-layers.jpg",
+      "tags": ["long", "layers", "volume", "movement", "face-framing"]
+    },
+    {
+      "id": "pixie-cut",
+      "name": "Pixie Cut",
+      "category": "short",
+      "subcategory": "cropped",
+      "description": "Very short, cropped hairstyle with hair length typically 1-3 inches. Features textured layers on top with shorter sides and back.",
+      "ai_instruction": "Create a very short pixie cut with hair length 1-3 inches maximum. Keep sides and back very short, add textured layers on top for movement. Create a slightly longer front section for styling versatility.",
+      "technical_specs": {
+        "length": "1-3 inches",
+        "layers": "textured top layers",
+        "face_framing": true,
+        "volume": "low to medium",
+        "maintenance": "high"
+      },
+      "preview_image": "https://example.com/previews/pixie-cut.jpg",
+      "tags": ["short", "cropped", "textured", "low-maintenance", "edgy"]
+    },
+    {
+      "id": "bob-cut",
+      "name": "Classic Bob",
+      "category": "medium",
+      "subcategory": "blunt",
+      "description": "Shoulder-length blunt cut with hair ending at jaw to shoulder level. Clean, straight lines with minimal layering.",
+      "ai_instruction": "Create a classic bob cut with hair ending at shoulder level. Make a clean, blunt cut with straight lines. Minimal to no layering, creating a sleek, geometric shape that frames the face.",
+      "technical_specs": {
+        "length": "8-12 inches",
+        "layers": "minimal or none",
+        "face_framing": true,
+        "volume": "medium",
+        "maintenance": "medium"
+      },
+      "preview_image": "https://example.com/previews/bob-cut.jpg",
+      "tags": ["medium", "blunt", "classic", "sleek", "geometric"]
+    },
+    {
+      "id": "beach-waves",
+      "name": "Beach Waves",
+      "category": "medium",
+      "subcategory": "wavy",
+      "description": "Relaxed, tousled waves that mimic natural beach hair. Medium length with loose, effortless-looking waves throughout.",
+      "ai_instruction": "Create relaxed, tousled beach waves in medium-length hair. Add loose, natural-looking waves throughout the hair with slightly more texture at the ends. Make it look effortless and windswept.",
+      "technical_specs": {
+        "length": "10-16 inches",
+        "texture": "wavy",
+        "face_framing": true,
+        "volume": "medium to high",
+        "maintenance": "low"
+      },
+      "preview_image": "https://example.com/previews/beach-waves.jpg",
+      "tags": ["wavy", "natural", "tousled", "effortless", "textured"]
+    },
+    {
+      "id": "shag-cut",
+      "name": "Modern Shag",
+      "category": "medium",
+      "subcategory": "layered",
+      "description": "Heavily layered cut with feathered ends and lots of texture. Features choppy layers throughout for a rock-and-roll vibe.",
+      "ai_instruction": "Create a modern shag cut with heavy layering throughout. Add choppy, feathered layers with lots of texture and movement. Include curtain bangs and face-framing pieces. Make it look edgy and rock-inspired.",
+      "technical_specs": {
+        "length": "8-14 inches",
+        "layers": "heavy choppy layers",
+        "bangs": "curtain bangs",
+        "volume": "high",
+        "maintenance": "medium"
+      },
+      "preview_image": "https://example.com/previews/shag-cut.jpg",
+      "tags": ["layered", "textured", "edgy", "choppy", "rock-inspired"]
+    },
+    {
+      "id": "lob-cut",
+      "name": "Long Bob (Lob)",
+      "category": "medium",
+      "subcategory": "blunt",
+      "description": "Longer version of the classic bob, ending just above or at the collarbone. Clean lines with subtle layers.",
+      "ai_instruction": "Create a long bob (lob) cut ending at collarbone length. Make clean, straight lines with subtle internal layers for movement. Keep the shape sleek and modern.",
+      "technical_specs": {
+        "length": "12-14 inches",
+        "layers": "subtle internal layers",
+        "face_framing": true,
+        "volume": "medium",
+        "maintenance": "low to medium"
+      },
+      "preview_image": "https://example.com/previews/lob-cut.jpg",
+      "tags": ["medium", "modern", "sleek", "collarbone", "versatile"]
+    }
+  ],
+  "color_variations": [
+    {
+      "id": "blonde-highlights",
+      "name": "Blonde Highlights",
+      "description": "Add blonde highlights throughout the hair for dimension and brightness",
+      "ai_instruction": "Add natural blonde highlights throughout the hair, creating dimension with lighter strands woven through the base color. Make highlights look natural and sun-kissed."
+    },
+    {
+      "id": "brunette-base",
+      "name": "Rich Brunette",
+      "description": "Deep brown base color with warm undertones",
+      "ai_instruction": "Change hair color to rich, deep brunette with warm chocolate undertones. Keep the color even and natural-looking."
+    },
+    {
+      "id": "auburn-red",
+      "name": "Auburn Red",
+      "description": "Warm reddish-brown color with copper highlights",
+      "ai_instruction": "Transform hair to auburn red color with warm copper undertones and subtle reddish highlights for depth and richness."
+    }
+  ]
+}

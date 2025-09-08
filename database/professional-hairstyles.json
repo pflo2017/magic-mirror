@@ -1,0 +1,416 @@
+{
+  "women_hairstyles": [
+    {
+      "name": "Layered Bob",
+      "description": "Classic bob with subtle layers for movement and texture",
+      "ai_instruction": "Create a layered bob haircut ending at chin level with soft, subtle layers throughout for movement. Keep the overall shape of a bob while adding gentle layering for texture and volume."
+    },
+    {
+      "name": "Pixie Cut",
+      "description": "Short, cropped hairstyle with textured layers on top",
+      "ai_instruction": "Create a pixie cut with very short hair (1-2 inches), keeping sides and back short while leaving slightly more length on top with textured layers for styling."
+    },
+    {
+      "name": "Long Layers",
+      "description": "Long hair with cascading layers for volume and movement",
+      "ai_instruction": "Create long layered hair extending past the shoulders with multiple cascading layers starting from the collarbone, adding volume and movement throughout the length."
+    },
+    {
+      "name": "Beach Waves",
+      "description": "Relaxed, tousled waves mimicking natural beach hair",
+      "ai_instruction": "Transform hair into relaxed beach waves with loose, tousled texture. Create natural-looking waves that appear effortlessly windswept and casual."
+    },
+    {
+      "name": "Blunt Bob",
+      "description": "Sharp, straight-across bob cut with no layers",
+      "ai_instruction": "Create a blunt bob with hair cut straight across at one precise length, typically at chin or jaw level, with no layers or graduation for a sharp, geometric look."
+    },
+    {
+      "name": "Shag Cut",
+      "description": "Heavily layered cut with feathered ends and lots of texture",
+      "ai_instruction": "Create a shag haircut with heavy layering throughout, choppy feathered ends, and lots of texture. Include face-framing layers and a slightly messy, rock-inspired finish."
+    },
+    {
+      "name": "Lob (Long Bob)",
+      "description": "Longer version of the classic bob, ending at the collarbone",
+      "ai_instruction": "Create a long bob (lob) that ends at or just below the collarbone with clean lines and minimal layering for a sleek, modern appearance."
+    },
+    {
+      "name": "Curtain Bangs",
+      "description": "Center-parted bangs that frame the face like curtains",
+      "ai_instruction": "Add curtain bangs that part in the center and sweep to either side of the face, creating a soft, face-framing effect while keeping the rest of the hairstyle unchanged."
+    },
+    {
+      "name": "Wolf Cut",
+      "description": "Hybrid of shag and mullet with heavy layers and texture",
+      "ai_instruction": "Create a wolf cut combining elements of a shag and mullet, with heavy layering, shorter layers on top, and longer pieces at the back, creating a wild, textured appearance."
+    },
+    {
+      "name": "Butterfly Haircut",
+      "description": "Face-framing layers that resemble butterfly wings",
+      "ai_instruction": "Create a butterfly haircut with dramatic face-framing layers that start around the cheekbones and create a wing-like effect, while keeping length at the back."
+    },
+    {
+      "name": "French Bob",
+      "description": "Chin-length bob with soft, wispy bangs",
+      "ai_instruction": "Create a French bob with hair ending at chin length, featuring soft, wispy bangs that blend seamlessly into the bob shape for a chic Parisian look."
+    },
+    {
+      "name": "Asymmetrical Bob",
+      "description": "Bob cut with one side longer than the other",
+      "ai_instruction": "Create an asymmetrical bob where one side is noticeably longer than the other, creating a modern, edgy geometric shape with clean lines."
+    },
+    {
+      "name": "Feathered Hair",
+      "description": "Layered cut with feathered, flipped-out ends",
+      "ai_instruction": "Create feathered hair with layers that flip outward at the ends, creating a feathered effect reminiscent of 1970s styling with volume and movement."
+    },
+    {
+      "name": "Buzz Cut",
+      "description": "Very short, uniform length all over the head",
+      "ai_instruction": "Create a buzz cut with hair clipped very short and uniform all over the head, typically 1/4 to 1/2 inch in length for a clean, minimal look."
+    },
+    {
+      "name": "Undercut Bob",
+      "description": "Bob with shaved or very short underneath section",
+      "ai_instruction": "Create an undercut bob with the top section styled as a bob while the underneath/nape area is shaved or cut very short, creating contrast and edge."
+    },
+    {
+      "name": "Textured Crop",
+      "description": "Short, choppy cut with lots of texture and movement",
+      "ai_instruction": "Create a textured crop with short, choppy layers throughout, adding texture and movement for a modern, edgy appearance with piece-y definition."
+    },
+    {
+      "name": "Side Swept Bangs",
+      "description": "Bangs swept dramatically to one side",
+      "ai_instruction": "Add side-swept bangs that are cut at an angle and styled to sweep dramatically across the forehead to one side, while keeping the rest of the hairstyle unchanged."
+    },
+    {
+      "name": "Graduated Bob",
+      "description": "Bob that's shorter in back and longer in front",
+      "ai_instruction": "Create a graduated bob that's shorter at the back and gradually gets longer toward the front, creating an angled, stacked effect with volume at the crown."
+    },
+    {
+      "name": "Finger Waves",
+      "description": "Vintage-style sculpted waves close to the head",
+      "ai_instruction": "Create finger waves with hair styled in sculpted S-shaped waves close to the head, reminiscent of 1920s and 1930s vintage glamour styling."
+    },
+    {
+      "name": "Micro Bob",
+      "description": "Ultra-short bob that sits above the jawline",
+      "ai_instruction": "Create a micro bob with hair cut very short, ending well above the jawline near the earlobe, for an ultra-modern, geometric appearance."
+    }
+  ],
+  
+  "men_hairstyles": [
+    {
+      "name": "Fade Cut",
+      "description": "Short sides that gradually blend into longer hair on top",
+      "ai_instruction": "Create a fade haircut with hair gradually transitioning from very short on the sides and back to longer hair on top, with smooth blending between lengths."
+    },
+    {
+      "name": "Undercut",
+      "description": "Disconnected cut with short sides and longer top",
+      "ai_instruction": "Create an undercut with the sides and back cut very short (buzzed) while leaving the top section significantly longer, creating a stark contrast between lengths."
+    },
+    {
+      "name": "Pompadour",
+      "description": "Hair swept upward and back with volume at the front",
+      "ai_instruction": "Create a pompadour with hair swept upward and back from the forehead, creating significant volume and height at the front while keeping sides shorter."
+    },
+    {
+      "name": "Quiff",
+      "description": "Textured hair swept up and back with volume",
+      "ai_instruction": "Create a quiff with hair on top styled upward and slightly back, creating volume and texture while keeping the sides shorter for contrast."
+    },
+    {
+      "name": "Buzz Cut",
+      "description": "Very short, uniform length all over",
+      "ai_instruction": "Create a buzz cut with hair clipped to a uniform short length all over the head, typically 1/8 to 1/2 inch for a clean, military-style appearance."
+    },
+    {
+      "name": "Crew Cut",
+      "description": "Short back and sides with slightly longer top",
+      "ai_instruction": "Create a crew cut with hair cut short on the back and sides while leaving the top slightly longer, creating a neat, professional military-inspired look."
+    },
+    {
+      "name": "Side Part",
+      "description": "Classic style with hair parted and combed to one side",
+      "ai_instruction": "Create a side part hairstyle with hair neatly parted on one side and combed over, maintaining medium length for a classic, professional appearance."
+    },
+    {
+      "name": "Slick Back",
+      "description": "Hair combed straight back with product for shine",
+      "ai_instruction": "Create a slicked-back hairstyle with hair combed straight back from the forehead, appearing smooth and polished as if styled with pomade or gel."
+    },
+    {
+      "name": "Textured Crop",
+      "description": "Short, choppy cut with texture and movement",
+      "ai_instruction": "Create a textured crop with short, choppy layers on top creating texture and movement, while keeping the sides neat and shorter."
+    },
+    {
+      "name": "Caesar Cut",
+      "description": "Short cut with hair combed forward toward the forehead",
+      "ai_instruction": "Create a Caesar cut with hair cut short and combed forward toward the forehead, often with a small fringe, for a classic Roman-inspired look."
+    },
+    {
+      "name": "Ivy League",
+      "description": "Longer crew cut that can be parted and styled",
+      "ai_instruction": "Create an Ivy League cut, which is a longer version of a crew cut with enough length on top to be parted and styled to the side."
+    },
+    {
+      "name": "Flat Top",
+      "description": "Hair cut flat across the top with short sides",
+      "ai_instruction": "Create a flat top with hair on top cut to stand upright and flat across the surface, while sides are cut short, creating a geometric, boxy appearance."
+    },
+    {
+      "name": "Mohawk",
+      "description": "Strip of longer hair down the center with shaved sides",
+      "ai_instruction": "Create a mohawk with a strip of longer hair running down the center of the head while the sides are shaved or cut very short."
+    },
+    {
+      "name": "Faux Hawk",
+      "description": "Mohawk-inspired style without fully shaved sides",
+      "ai_instruction": "Create a faux hawk with hair styled to mimic a mohawk by creating height in the center while keeping hair on the sides, just styled down or cut shorter."
+    },
+    {
+      "name": "Taper Cut",
+      "description": "Gradually shorter hair from top to neckline",
+      "ai_instruction": "Create a taper cut with hair gradually getting shorter from the top of the head down to the neckline, creating a smooth, professional transition."
+    },
+    {
+      "name": "High and Tight",
+      "description": "Very short sides with slightly longer top",
+      "ai_instruction": "Create a high and tight cut with the sides and back cut very short (almost shaved) while leaving a small amount of length on the very top."
+    },
+    {
+      "name": "Comb Over",
+      "description": "Hair combed from one side to cover the other",
+      "ai_instruction": "Create a comb over with longer hair on one side combed across to the other side, often used to cover thinning areas or create a classic style."
+    },
+    {
+      "name": "Mullet",
+      "description": "Short front and sides with long back",
+      "ai_instruction": "Create a mullet with hair cut short at the front and sides while leaving the back section significantly longer, creating the classic 'business front, party back' look."
+    },
+    {
+      "name": "Bowl Cut",
+      "description": "Hair cut in a straight line around the head",
+      "ai_instruction": "Create a bowl cut with hair cut in a straight line around the head at one length, creating a bowl-like shape that's uniform all around."
+    },
+    {
+      "name": "Bro Flow",
+      "description": "Medium-length hair swept back naturally",
+      "ai_instruction": "Create a bro flow with medium-length hair (3-5 inches) that's grown out and swept back naturally, creating a relaxed, effortless surfer-style appearance."
+    }
+  ],
+
+  "men_beards": [
+    {
+      "name": "Full Beard",
+      "description": "Complete beard covering cheeks, jaw, and chin",
+      "ai_instruction": "Add a full beard that covers the entire lower face including cheeks, jawline, and chin with even, well-groomed hair growth."
+    },
+    {
+      "name": "Goatee",
+      "description": "Beard on chin only, often with mustache",
+      "ai_instruction": "Add a goatee consisting of hair on the chin area only, typically combined with a mustache, while keeping the cheeks clean-shaven."
+    },
+    {
+      "name": "Van Dyke",
+      "description": "Pointed goatee with disconnected mustache",
+      "ai_instruction": "Add a Van Dyke beard consisting of a pointed goatee on the chin with a separate, disconnected mustache above the lip."
+    },
+    {
+      "name": "Circle Beard",
+      "description": "Goatee connected to mustache in circular shape",
+      "ai_instruction": "Add a circle beard where the goatee and mustache are connected, forming a circular pattern around the mouth while keeping cheeks clean."
+    },
+    {
+      "name": "Stubble",
+      "description": "Short, rough beard growth (1-3mm)",
+      "ai_instruction": "Add stubble consisting of short, rough facial hair growth (1-3mm) across the jaw, chin, and cheeks for a rugged, casual appearance."
+    },
+    {
+      "name": "5 O'Clock Shadow",
+      "description": "Very light stubble visible by evening",
+      "ai_instruction": "Add a 5 o'clock shadow consisting of very light stubble that's barely visible, as if the person shaved in the morning and slight growth appeared by evening."
+    },
+    {
+      "name": "Chinstrap",
+      "description": "Thin line of hair along the jawline",
+      "ai_instruction": "Add a chinstrap beard consisting of a thin line of hair that follows the jawline from ear to ear, passing under the chin like a strap."
+    },
+    {
+      "name": "Soul Patch",
+      "description": "Small patch of hair below the lower lip",
+      "ai_instruction": "Add a soul patch consisting of a small, neat patch of hair directly below the center of the lower lip, keeping the rest of the face clean-shaven."
+    },
+    {
+      "name": "Mutton Chops",
+      "description": "Large sideburns extending down to jawline",
+      "ai_instruction": "Add mutton chops consisting of large, thick sideburns that extend down to the jawline while keeping the chin and mustache area clean-shaven."
+    },
+    {
+      "name": "Handlebar Mustache",
+      "description": "Mustache with curled, waxed ends",
+      "ai_instruction": "Add a handlebar mustache with the ends curled upward and outward, typically waxed to maintain the distinctive curved shape, while keeping the rest of the face clean."
+    },
+    {
+      "name": "Horseshoe Mustache",
+      "description": "Mustache extending down around the mouth",
+      "ai_instruction": "Add a horseshoe mustache that extends from the upper lip down around both sides of the mouth to the jawline, creating an inverted U-shape."
+    },
+    {
+      "name": "Anchor Beard",
+      "description": "Pointed beard with mustache resembling an anchor",
+      "ai_instruction": "Add an anchor beard consisting of a pointed beard on the chin connected to a mustache, with the overall shape resembling a ship's anchor."
+    },
+    {
+      "name": "Balbo",
+      "description": "Beard without sideburns, with disconnected mustache",
+      "ai_instruction": "Add a Balbo beard covering the chin and jaw area without connecting to sideburns, paired with a separate mustache that doesn't connect to the beard."
+    },
+    {
+      "name": "Imperial",
+      "description": "Mustache with long, upward-curled ends",
+      "ai_instruction": "Add an Imperial mustache with long ends that curl upward dramatically, often waxed to maintain the distinctive upward spiral shape."
+    },
+    {
+      "name": "Pencil Mustache",
+      "description": "Thin, narrow mustache above the upper lip",
+      "ai_instruction": "Add a pencil mustache consisting of a thin, narrow line of hair directly above the upper lip, kept very neat and precisely trimmed."
+    },
+    {
+      "name": "Friendly Mutton Chops",
+      "description": "Sideburns connected by mustache",
+      "ai_instruction": "Add friendly mutton chops consisting of large sideburns that connect across the upper lip via a mustache, while keeping the chin clean-shaven."
+    },
+    {
+      "name": "Ducktail",
+      "description": "Full beard shaped to a point at the chin",
+      "ai_instruction": "Add a ducktail beard consisting of a full beard that's shaped and trimmed to come to a point at the chin, resembling a duck's tail."
+    },
+    {
+      "name": "Bandholz",
+      "description": "Long, full, natural beard with mustache",
+      "ai_instruction": "Add a Bandholz beard consisting of a long, full, natural beard (6+ inches) with a connected mustache, allowed to grow freely with minimal trimming."
+    },
+    {
+      "name": "Garibaldi",
+      "description": "Full, rounded beard with integrated mustache",
+      "ai_instruction": "Add a Garibaldi beard consisting of a full, wide, rounded beard (4-6 inches) with an integrated mustache, kept neat but with a natural, full appearance."
+    },
+    {
+      "name": "Verdi",
+      "description": "Short, rounded full beard with curled mustache",
+      "ai_instruction": "Add a Verdi beard consisting of a short, rounded full beard with a distinctive curled mustache that doesn't connect to the beard portion."
+    }
+  ],
+
+  "women_colors": [
+    {
+      "name": "Platinum Blonde",
+      "description": "Ultra-light, almost white blonde with cool undertones",
+      "ai_instruction": "Transform hair color to platinum blonde - very light, almost white blonde with cool, icy undertones. Maintain the hairstyle while only changing the color."
+    },
+    {
+      "name": "Honey Blonde",
+      "description": "Warm, golden blonde with honey-like tones",
+      "ai_instruction": "Change hair color to honey blonde with warm, golden tones resembling natural honey. Add subtle highlights for dimension while keeping the hairstyle unchanged."
+    },
+    {
+      "name": "Ash Brown",
+      "description": "Cool-toned brown with gray undertones",
+      "ai_instruction": "Transform hair color to ash brown - a cool-toned brown with subtle gray undertones that neutralizes any warmth. Keep the hairstyle identical."
+    },
+    {
+      "name": "Chocolate Brown",
+      "description": "Rich, deep brown with warm undertones",
+      "ai_instruction": "Change hair color to chocolate brown - a rich, deep brown with warm undertones resembling dark chocolate. Maintain all other aspects of the appearance."
+    },
+    {
+      "name": "Auburn",
+      "description": "Reddish-brown with copper highlights",
+      "ai_instruction": "Transform hair color to auburn - a reddish-brown base with natural copper highlights and warm undertones. Keep the hairstyle and cut unchanged."
+    },
+    {
+      "name": "Balayage",
+      "description": "Hand-painted highlights for natural sun-kissed effect",
+      "ai_instruction": "Add balayage highlighting technique with hand-painted blonde highlights that create a natural, sun-kissed effect, focusing on face-framing pieces and ends."
+    },
+    {
+      "name": "Ombre",
+      "description": "Gradual color transition from dark roots to light ends",
+      "ai_instruction": "Create an ombre effect with hair color gradually transitioning from darker roots to lighter ends, typically from brown to blonde with smooth blending."
+    },
+    {
+      "name": "Copper Red",
+      "description": "Vibrant red with orange undertones",
+      "ai_instruction": "Transform hair color to copper red - a vibrant, fiery red with orange undertones that catches light beautifully. Maintain the existing hairstyle."
+    },
+    {
+      "name": "Caramel Highlights",
+      "description": "Warm, golden-brown highlights throughout",
+      "ai_instruction": "Add caramel highlights throughout the hair - warm, golden-brown highlights that add dimension and warmth to the base color while keeping the style unchanged."
+    },
+    {
+      "name": "Jet Black",
+      "description": "Deep, true black with blue undertones",
+      "ai_instruction": "Change hair color to jet black - a deep, true black with subtle blue undertones for richness and shine. Keep all other features identical."
+    }
+  ],
+
+  "men_colors": [
+    {
+      "name": "Natural Brown",
+      "description": "Medium brown with neutral undertones",
+      "ai_instruction": "Transform hair color to natural brown - a medium brown shade with neutral undertones that looks completely natural. Maintain the existing hairstyle."
+    },
+    {
+      "name": "Dark Brown",
+      "description": "Deep brown with slight warm undertones",
+      "ai_instruction": "Change hair color to dark brown - a deep, rich brown with slight warm undertones for a natural, masculine appearance. Keep the hairstyle unchanged."
+    },
+    {
+      "name": "Black",
+      "description": "True black hair color",
+      "ai_instruction": "Transform hair color to true black - a deep, solid black color that appears natural and well-maintained. Maintain all other aspects of the appearance."
+    },
+    {
+      "name": "Sandy Brown",
+      "description": "Light brown with blonde undertones",
+      "ai_instruction": "Change hair color to sandy brown - a light brown with natural blonde undertones, resembling sun-lightened brown hair. Keep the hairstyle identical."
+    },
+    {
+      "name": "Ash Blonde",
+      "description": "Cool-toned blonde with gray undertones",
+      "ai_instruction": "Transform hair color to ash blonde - a cool-toned blonde with gray undertones that neutralizes any brassiness. Maintain the existing cut and style."
+    },
+    {
+      "name": "Salt and Pepper",
+      "description": "Natural mix of gray and original color",
+      "ai_instruction": "Add salt and pepper coloring with a natural mix of gray and the original hair color, creating a distinguished, mature appearance while keeping the hairstyle unchanged."
+    },
+    {
+      "name": "Silver Gray",
+      "description": "Sophisticated gray with silver tones",
+      "ai_instruction": "Transform hair color to silver gray - a sophisticated gray with metallic silver tones that appears naturally aged and distinguished. Keep the hairstyle identical."
+    },
+    {
+      "name": "Dirty Blonde",
+      "description": "Muted blonde with brown undertones",
+      "ai_instruction": "Change hair color to dirty blonde - a muted blonde with brown undertones that creates a natural, lived-in color. Maintain all other features."
+    },
+    {
+      "name": "Chestnut Brown",
+      "description": "Warm brown with reddish undertones",
+      "ai_instruction": "Transform hair color to chestnut brown - a warm brown with subtle reddish undertones resembling the color of chestnuts. Keep the hairstyle unchanged."
+    },
+    {
+      "name": "Charcoal",
+      "description": "Very dark gray-black color",
+      "ai_instruction": "Change hair color to charcoal - a very dark gray-black color that's almost black but with subtle gray undertones for depth. Maintain the existing hairstyle."
+    }
+  ]
+}

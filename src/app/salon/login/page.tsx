@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Sparkles, Eye, EyeOff, ArrowRight } from 'lucide-react'
@@ -15,6 +15,28 @@ export default function SalonLogin() {
   const [showPassword, setShowPassword] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+
+  // Clear any invalid sessions on component mount
+  useEffect(() => {
+    const clearInvalidSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session) {
+          // Try to refresh the session
+          const { error } = await supabase.auth.refreshSession()
+          if (error) {
+            // If refresh fails, sign out to clear invalid session
+            await supabase.auth.signOut()
+          }
+        }
+      } catch (error) {
+        // If any error occurs, clear the session
+        await supabase.auth.signOut()
+      }
+    }
+    
+    clearInvalidSession()
+  }, [])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({

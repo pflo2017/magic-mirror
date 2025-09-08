@@ -1,0 +1,154 @@
+{
+  "generation_settings": {
+    "aspect_ratio": "3:4 (portrait)",
+    "resolution": "1024x1365 or higher",
+    "quality": "high/photorealistic",
+    "style": "professional photography",
+    "lighting": "studio lighting",
+    "background": "clean white/neutral"
+  },
+  "consistency_guidelines": {
+    "character": "Use the same model face across all images in each gender category",
+    "lighting": "Maintain consistent studio lighting setup",
+    "background": "Keep background clean and neutral",
+    "angle": "Front-facing portrait with slight angle for dimension",
+    "expression": "Neutral, professional, friendly expression"
+  },
+  "ai_tool_settings": {
+    "midjourney": "--ar 3:4 --style raw --quality 2",
+    "dalle3": "Square format, photorealistic style, high quality",
+    "stable_diffusion": "Portrait mode, photorealistic, high resolution",
+    "leonardo_ai": "PhotoReal model, portrait orientation"
+  },
+  "base_characters": {
+    "female": "Professional female model, 25-30 years old, neutral friendly expression, oval face shape, medium skin tone, brown eyes, natural makeup, studio lighting, clean white background, front-facing portrait, high quality, photorealistic",
+    "male": "Professional male model, 25-30 years old, neutral confident expression, square jaw, medium skin tone, brown eyes, clean-shaven (unless beard style), studio lighting, clean white background, front-facing portrait, high quality, photorealistic"
+  },
+  "prompts_by_category": {
+    "women_hairstyles": {
+      "long-layers": "Professional female model, 25-30 years old, neutral friendly expression, oval face shape, medium skin tone, brown eyes, natural makeup, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, long layered hair extending to mid-back, cascading layers with movement and volume, face-framing layers, natural brown hair color, salon-quality styling",
+      "beach-waves": "Professional female model, 25-30 years old, neutral friendly expression, oval face shape, medium skin tone, brown eyes, natural makeup, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, medium-length beach waves, tousled natural waves, effortless styling, light brown hair with natural highlights, relaxed texture",
+      "classic-bob": "Professional female model, 25-30 years old, neutral friendly expression, oval face shape, medium skin tone, brown eyes, natural makeup, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, classic bob haircut at chin length, blunt cut with clean geometric lines, straight hair, sleek styling, dark brown hair color",
+      "pixie-cut": "Professional female model, 25-30 years old, neutral friendly expression, oval face shape, medium skin tone, brown eyes, natural makeup, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, modern pixie cut, very short textured hair, longer on top with layers, edgy yet feminine styling, light brown hair",
+      "long-bob": "Professional female model, 25-30 years old, neutral friendly expression, oval face shape, medium skin tone, brown eyes, natural makeup, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, long bob (lob) at collarbone length, sleek straight cut with subtle layers, modern styling, medium brown hair",
+      "modern-shag": "Professional female model, 25-30 years old, neutral friendly expression, oval face shape, medium skin tone, brown eyes, natural makeup, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, modern shag haircut, heavily layered with choppy texture, curtain bangs, rock-inspired edgy styling, medium brown hair",
+      "curtain-bangs": "Professional female model, 25-30 years old, neutral friendly expression, oval face shape, medium skin tone, brown eyes, natural makeup, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, curtain bangs parting in center, face-framing wispy bangs, medium-length hair, soft natural styling, brown hair",
+      "blunt-cut": "Professional female model, 25-30 years old, neutral friendly expression, oval face shape, medium skin tone, brown eyes, natural makeup, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, blunt cut hair, sharp straight-across ends, no layers, geometric precision, shoulder-length, dark brown hair"
+    },
+    "women_colors": {
+      "platinum-blonde": "Professional female model, 25-30 years old, neutral friendly expression, oval face shape, medium skin tone, brown eyes, natural makeup, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, long layered hair, platinum blonde color, very light almost white blonde, cool undertones, professional color treatment",
+      "auburn-red": "Professional female model, 25-30 years old, neutral friendly expression, oval face shape, medium skin tone, brown eyes, natural makeup, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, long layered hair, auburn red hair color, rich reddish-brown with copper highlights, warm undertones",
+      "chocolate-brown": "Professional female model, 25-30 years old, neutral friendly expression, oval face shape, medium skin tone, brown eyes, natural makeup, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, long layered hair, deep chocolate brown hair color, rich warm brown, natural healthy shine",
+      "honey-blonde": "Professional female model, 25-30 years old, neutral friendly expression, oval face shape, medium skin tone, brown eyes, natural makeup, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, long layered hair, honey blonde hair color, warm golden blonde with caramel undertones, natural highlights",
+      "balayage-highlights": "Professional female model, 25-30 years old, neutral friendly expression, oval face shape, medium skin tone, brown eyes, natural makeup, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, long layered hair, balayage highlights, hand-painted blonde highlights on brown base, natural sun-kissed effect",
+      "ombre-effect": "Professional female model, 25-30 years old, neutral friendly expression, oval face shape, medium skin tone, brown eyes, natural makeup, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, long layered hair, ombre hair color, dark brown roots transitioning to blonde ends, smooth gradient"
+    },
+    "men_hairstyles": {
+      "classic-fade": "Professional male model, 25-30 years old, neutral confident expression, square jaw, medium skin tone, brown eyes, clean-shaven (unless beard style), studio lighting, clean white background, front-facing portrait, high quality, photorealistic, classic fade haircut, short sides fading to longer top, professional styling, dark brown hair, clean barbershop cut",
+      "pompadour": "Professional male model, 25-30 years old, neutral confident expression, square jaw, medium skin tone, brown eyes, clean-shaven (unless beard style), studio lighting, clean white background, front-facing portrait, high quality, photorealistic, pompadour hairstyle, swept back hair with volume and height, shorter sides, vintage-modern styling, dark brown hair",
+      "textured-crop": "Professional male model, 25-30 years old, neutral confident expression, square jaw, medium skin tone, brown eyes, clean-shaven (unless beard style), studio lighting, clean white background, front-facing portrait, high quality, photorealistic, textured crop haircut, short sides with textured top and slight fringe, modern styling, medium brown hair",
+      "buzz-cut": "Professional male model, 25-30 years old, neutral confident expression, square jaw, medium skin tone, brown eyes, clean-shaven (unless beard style), studio lighting, clean white background, front-facing portrait, high quality, photorealistic, buzz cut hairstyle, very short hair clipped evenly all over, military-style cut, dark brown hair",
+      "quiff": "Professional male model, 25-30 years old, neutral confident expression, square jaw, medium skin tone, brown eyes, clean-shaven (unless beard style), studio lighting, clean white background, front-facing portrait, high quality, photorealistic, quiff hairstyle, upswept front with volume, shorter sides, styled with texture, medium brown hair",
+      "side-part": "Professional male model, 25-30 years old, neutral confident expression, square jaw, medium skin tone, brown eyes, clean-shaven (unless beard style), studio lighting, clean white background, front-facing portrait, high quality, photorealistic, side part hairstyle, neat professional cut with defined side part, combed styling, dark brown hair"
+    },
+    "men_beards": {
+      "full-beard": "Professional male model, 25-30 years old, neutral confident expression, square jaw, medium skin tone, brown eyes, full well-groomed beard, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, classic fade haircut, full beard that complements face shape, professional grooming",
+      "goatee": "Professional male model, 25-30 years old, neutral confident expression, square jaw, medium skin tone, brown eyes, neat goatee, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, classic fade haircut, goatee with mustache, precise grooming",
+      "stubble": "Professional male model, 25-30 years old, neutral confident expression, square jaw, medium skin tone, brown eyes, light stubble, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, classic fade haircut, light stubble across jaw and chin, natural growth"
+    }
+  },
+  "all_prompts": {
+    "long-layers": {
+      "prompt": "Professional female model, 25-30 years old, neutral friendly expression, oval face shape, medium skin tone, brown eyes, natural makeup, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, long layered hair extending to mid-back, cascading layers with movement and volume, face-framing layers, natural brown hair color, salon-quality styling",
+      "category": "women_hairstyles"
+    },
+    "beach-waves": {
+      "prompt": "Professional female model, 25-30 years old, neutral friendly expression, oval face shape, medium skin tone, brown eyes, natural makeup, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, medium-length beach waves, tousled natural waves, effortless styling, light brown hair with natural highlights, relaxed texture",
+      "category": "women_hairstyles"
+    },
+    "classic-bob": {
+      "prompt": "Professional female model, 25-30 years old, neutral friendly expression, oval face shape, medium skin tone, brown eyes, natural makeup, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, classic bob haircut at chin length, blunt cut with clean geometric lines, straight hair, sleek styling, dark brown hair color",
+      "category": "women_hairstyles"
+    },
+    "pixie-cut": {
+      "prompt": "Professional female model, 25-30 years old, neutral friendly expression, oval face shape, medium skin tone, brown eyes, natural makeup, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, modern pixie cut, very short textured hair, longer on top with layers, edgy yet feminine styling, light brown hair",
+      "category": "women_hairstyles"
+    },
+    "long-bob": {
+      "prompt": "Professional female model, 25-30 years old, neutral friendly expression, oval face shape, medium skin tone, brown eyes, natural makeup, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, long bob (lob) at collarbone length, sleek straight cut with subtle layers, modern styling, medium brown hair",
+      "category": "women_hairstyles"
+    },
+    "modern-shag": {
+      "prompt": "Professional female model, 25-30 years old, neutral friendly expression, oval face shape, medium skin tone, brown eyes, natural makeup, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, modern shag haircut, heavily layered with choppy texture, curtain bangs, rock-inspired edgy styling, medium brown hair",
+      "category": "women_hairstyles"
+    },
+    "curtain-bangs": {
+      "prompt": "Professional female model, 25-30 years old, neutral friendly expression, oval face shape, medium skin tone, brown eyes, natural makeup, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, curtain bangs parting in center, face-framing wispy bangs, medium-length hair, soft natural styling, brown hair",
+      "category": "women_hairstyles"
+    },
+    "blunt-cut": {
+      "prompt": "Professional female model, 25-30 years old, neutral friendly expression, oval face shape, medium skin tone, brown eyes, natural makeup, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, blunt cut hair, sharp straight-across ends, no layers, geometric precision, shoulder-length, dark brown hair",
+      "category": "women_hairstyles"
+    },
+    "platinum-blonde": {
+      "prompt": "Professional female model, 25-30 years old, neutral friendly expression, oval face shape, medium skin tone, brown eyes, natural makeup, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, long layered hair, platinum blonde color, very light almost white blonde, cool undertones, professional color treatment",
+      "category": "women_colors"
+    },
+    "auburn-red": {
+      "prompt": "Professional female model, 25-30 years old, neutral friendly expression, oval face shape, medium skin tone, brown eyes, natural makeup, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, long layered hair, auburn red hair color, rich reddish-brown with copper highlights, warm undertones",
+      "category": "women_colors"
+    },
+    "chocolate-brown": {
+      "prompt": "Professional female model, 25-30 years old, neutral friendly expression, oval face shape, medium skin tone, brown eyes, natural makeup, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, long layered hair, deep chocolate brown hair color, rich warm brown, natural healthy shine",
+      "category": "women_colors"
+    },
+    "honey-blonde": {
+      "prompt": "Professional female model, 25-30 years old, neutral friendly expression, oval face shape, medium skin tone, brown eyes, natural makeup, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, long layered hair, honey blonde hair color, warm golden blonde with caramel undertones, natural highlights",
+      "category": "women_colors"
+    },
+    "balayage-highlights": {
+      "prompt": "Professional female model, 25-30 years old, neutral friendly expression, oval face shape, medium skin tone, brown eyes, natural makeup, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, long layered hair, balayage highlights, hand-painted blonde highlights on brown base, natural sun-kissed effect",
+      "category": "women_colors"
+    },
+    "ombre-effect": {
+      "prompt": "Professional female model, 25-30 years old, neutral friendly expression, oval face shape, medium skin tone, brown eyes, natural makeup, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, long layered hair, ombre hair color, dark brown roots transitioning to blonde ends, smooth gradient",
+      "category": "women_colors"
+    },
+    "classic-fade": {
+      "prompt": "Professional male model, 25-30 years old, neutral confident expression, square jaw, medium skin tone, brown eyes, clean-shaven (unless beard style), studio lighting, clean white background, front-facing portrait, high quality, photorealistic, classic fade haircut, short sides fading to longer top, professional styling, dark brown hair, clean barbershop cut",
+      "category": "men_hairstyles"
+    },
+    "pompadour": {
+      "prompt": "Professional male model, 25-30 years old, neutral confident expression, square jaw, medium skin tone, brown eyes, clean-shaven (unless beard style), studio lighting, clean white background, front-facing portrait, high quality, photorealistic, pompadour hairstyle, swept back hair with volume and height, shorter sides, vintage-modern styling, dark brown hair",
+      "category": "men_hairstyles"
+    },
+    "textured-crop": {
+      "prompt": "Professional male model, 25-30 years old, neutral confident expression, square jaw, medium skin tone, brown eyes, clean-shaven (unless beard style), studio lighting, clean white background, front-facing portrait, high quality, photorealistic, textured crop haircut, short sides with textured top and slight fringe, modern styling, medium brown hair",
+      "category": "men_hairstyles"
+    },
+    "buzz-cut": {
+      "prompt": "Professional male model, 25-30 years old, neutral confident expression, square jaw, medium skin tone, brown eyes, clean-shaven (unless beard style), studio lighting, clean white background, front-facing portrait, high quality, photorealistic, buzz cut hairstyle, very short hair clipped evenly all over, military-style cut, dark brown hair",
+      "category": "men_hairstyles"
+    },
+    "quiff": {
+      "prompt": "Professional male model, 25-30 years old, neutral confident expression, square jaw, medium skin tone, brown eyes, clean-shaven (unless beard style), studio lighting, clean white background, front-facing portrait, high quality, photorealistic, quiff hairstyle, upswept front with volume, shorter sides, styled with texture, medium brown hair",
+      "category": "men_hairstyles"
+    },
+    "side-part": {
+      "prompt": "Professional male model, 25-30 years old, neutral confident expression, square jaw, medium skin tone, brown eyes, clean-shaven (unless beard style), studio lighting, clean white background, front-facing portrait, high quality, photorealistic, side part hairstyle, neat professional cut with defined side part, combed styling, dark brown hair",
+      "category": "men_hairstyles"
+    },
+    "full-beard": {
+      "prompt": "Professional male model, 25-30 years old, neutral confident expression, square jaw, medium skin tone, brown eyes, full well-groomed beard, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, classic fade haircut, full beard that complements face shape, professional grooming",
+      "category": "men_beards"
+    },
+    "goatee": {
+      "prompt": "Professional male model, 25-30 years old, neutral confident expression, square jaw, medium skin tone, brown eyes, neat goatee, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, classic fade haircut, goatee with mustache, precise grooming",
+      "category": "men_beards"
+    },
+    "stubble": {
+      "prompt": "Professional male model, 25-30 years old, neutral confident expression, square jaw, medium skin tone, brown eyes, light stubble, studio lighting, clean white background, front-facing portrait, high quality, photorealistic, classic fade haircut, light stubble across jaw and chin, natural growth",
+      "category": "men_beards"
+    }
+  }
+}

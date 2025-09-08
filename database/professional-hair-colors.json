@@ -1,0 +1,174 @@
+{
+  "women_colors": [
+    {
+      "name": "Platinum Blonde",
+      "description": "Ultra-light, almost white blonde with cool undertones",
+      "hex_color": "#F5F5DC",
+      "category": "women_colors",
+      "instruction": "Transform hair to platinum blonde - very light, almost white blonde with cool silver undertones. Keep the hairstyle exactly the same, only change the color to this ultra-light shade."
+    },
+    {
+      "name": "Golden Blonde",
+      "description": "Warm, honey-toned blonde with golden highlights",
+      "hex_color": "#FFD700",
+      "category": "women_colors",
+      "instruction": "Transform hair to golden blonde - warm, honey-toned blonde with beautiful golden highlights and warm undertones. Maintain the exact hairstyle, only change the color."
+    },
+    {
+      "name": "Ash Blonde",
+      "description": "Cool-toned blonde with ashy, matte finish",
+      "hex_color": "#C4A484",
+      "category": "women_colors",
+      "instruction": "Transform hair to ash blonde - cool-toned blonde with ashy, matte finish and no warm undertones. Keep hairstyle identical, only change color to this sophisticated ash tone."
+    },
+    {
+      "name": "Strawberry Blonde",
+      "description": "Blonde with subtle red and pink undertones",
+      "hex_color": "#FF9999",
+      "category": "women_colors",
+      "instruction": "Transform hair to strawberry blonde - blonde base with beautiful subtle red and pink undertones. Maintain the hairstyle exactly, only change the color to this romantic shade."
+    },
+    {
+      "name": "Caramel Brown",
+      "description": "Rich, warm brown with caramel highlights",
+      "hex_color": "#D2691E",
+      "category": "women_colors",
+      "instruction": "Transform hair to caramel brown - rich, warm brown base with beautiful caramel highlights throughout. Keep the hairstyle the same, only change to this luxurious color."
+    },
+    {
+      "name": "Chocolate Brown",
+      "description": "Deep, rich brown like dark chocolate",
+      "hex_color": "#7B3F00",
+      "category": "women_colors",
+      "instruction": "Transform hair to chocolate brown - deep, rich brown color like dark chocolate with subtle shine. Maintain exact hairstyle, only change the color to this decadent shade."
+    },
+    {
+      "name": "Auburn",
+      "description": "Reddish-brown with copper highlights",
+      "hex_color": "#A52A2A",
+      "category": "women_colors",
+      "instruction": "Transform hair to auburn - beautiful reddish-brown base with natural copper highlights and warm undertones. Keep hairstyle identical, only change to this stunning color."
+    },
+    {
+      "name": "Copper Red",
+      "description": "Vibrant red with metallic copper tones",
+      "hex_color": "#B87333",
+      "category": "women_colors",
+      "instruction": "Transform hair to copper red - vibrant red with beautiful metallic copper tones and shine. Maintain the hairstyle exactly, only change the color to this bold shade."
+    },
+    {
+      "name": "Burgundy",
+      "description": "Deep red-wine color with purple undertones",
+      "hex_color": "#800020",
+      "category": "women_colors",
+      "instruction": "Transform hair to burgundy - deep red-wine color with subtle purple undertones and rich depth. Keep hairstyle the same, only change to this sophisticated color."
+    },
+    {
+      "name": "Jet Black",
+      "description": "Pure, glossy black with blue undertones",
+      "hex_color": "#000000",
+      "category": "women_colors",
+      "instruction": "Transform hair to jet black - pure, glossy black with subtle blue undertones and high shine. Maintain exact hairstyle, only change the color to this classic shade."
+    },
+    {
+      "name": "Espresso Brown",
+      "description": "Very dark brown, almost black with coffee tones",
+      "hex_color": "#3C2415",
+      "category": "women_colors",
+      "instruction": "Transform hair to espresso brown - very dark brown, almost black with rich coffee tones and depth. Keep hairstyle identical, only change to this sophisticated color."
+    },
+    {
+      "name": "Rose Gold",
+      "description": "Blonde base with pink and gold undertones",
+      "hex_color": "#E8B4B8",
+      "category": "women_colors",
+      "instruction": "Transform hair to rose gold - blonde base with beautiful pink and gold undertones creating a trendy metallic effect. Maintain hairstyle exactly, only change the color."
+    },
+    {
+      "name": "Silver Gray",
+      "description": "Sophisticated silver-gray with cool undertones",
+      "hex_color": "#C0C0C0",
+      "category": "women_colors",
+      "instruction": "Transform hair to silver gray - sophisticated silver-gray color with cool undertones and metallic shine. Keep hairstyle the same, only change to this modern color."
+    }
+  ],
+  "men_colors": [
+    {
+      "name": "Natural Brown",
+      "description": "Classic medium brown, most common natural color",
+      "hex_color": "#8B4513",
+      "category": "men_colors",
+      "instruction": "Transform hair to natural brown - classic medium brown color, the most common natural hair shade with neutral undertones. Maintain exact hairstyle, only change the color."
+    },
+    {
+      "name": "Dark Brown",
+      "description": "Deep brown with rich undertones",
+      "hex_color": "#654321",
+      "category": "men_colors",
+      "instruction": "Transform hair to dark brown - deep brown with rich undertones and natural depth. Keep hairstyle identical, only change the color to this classic masculine shade."
+    },
+    {
+      "name": "Jet Black",
+      "description": "Pure black with subtle blue undertones",
+      "hex_color": "#000000",
+      "category": "men_colors",
+      "instruction": "Transform hair to jet black - pure black with subtle blue undertones and natural shine. Maintain the hairstyle exactly, only change the color to this bold shade."
+    },
+    {
+      "name": "Sandy Brown",
+      "description": "Light brown with sandy, sun-kissed tones",
+      "hex_color": "#F4A460",
+      "category": "men_colors",
+      "instruction": "Transform hair to sandy brown - light brown with sandy, sun-kissed tones and warm highlights. Keep hairstyle the same, only change to this natural-looking color."
+    },
+    {
+      "name": "Ash Brown",
+      "description": "Cool-toned brown with no warm undertones",
+      "hex_color": "#8B7355",
+      "category": "men_colors",
+      "instruction": "Transform hair to ash brown - cool-toned brown with no warm undertones, sophisticated and modern. Maintain exact hairstyle, only change the color."
+    },
+    {
+      "name": "Dirty Blonde",
+      "description": "Dark blonde with brown undertones",
+      "hex_color": "#D2B48C",
+      "category": "men_colors",
+      "instruction": "Transform hair to dirty blonde - dark blonde with subtle brown undertones and natural variation. Keep hairstyle identical, only change to this versatile color."
+    },
+    {
+      "name": "Salt and Pepper",
+      "description": "Natural mix of dark hair with gray throughout",
+      "hex_color": "#808080",
+      "category": "men_colors",
+      "instruction": "Transform hair to salt and pepper - natural mix of dark hair with gray strands throughout, creating a distinguished mature look. Maintain hairstyle, only change the color."
+    },
+    {
+      "name": "Silver Fox",
+      "description": "Sophisticated all-over silver-gray",
+      "hex_color": "#C0C0C0",
+      "category": "men_colors",
+      "instruction": "Transform hair to silver fox - sophisticated all-over silver-gray color with metallic shine and distinguished appearance. Keep hairstyle the same, only change the color."
+    },
+    {
+      "name": "Charcoal",
+      "description": "Very dark gray-black with matte finish",
+      "hex_color": "#36454F",
+      "category": "men_colors",
+      "instruction": "Transform hair to charcoal - very dark gray-black with matte finish and sophisticated depth. Maintain exact hairstyle, only change to this modern color."
+    },
+    {
+      "name": "Chestnut Brown",
+      "description": "Warm reddish-brown with copper highlights",
+      "hex_color": "#954535",
+      "category": "men_colors",
+      "instruction": "Transform hair to chestnut brown - warm reddish-brown with subtle copper highlights and rich depth. Keep hairstyle identical, only change the color."
+    },
+    {
+      "name": "Platinum Blonde",
+      "description": "Ultra-light blonde with cool undertones",
+      "hex_color": "#F5F5DC",
+      "category": "men_colors",
+      "instruction": "Transform hair to platinum blonde - ultra-light blonde with cool undertones and modern edge. Maintain the hairstyle exactly, only change to this bold color."
+    }
+  ]
+}

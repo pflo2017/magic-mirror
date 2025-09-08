@@ -19,6 +19,7 @@ interface HairTransformationResult {
   error?: string
   usedAI: boolean
   prompt?: string
+  usedReference?: boolean
 }
 
 /**
@@ -105,7 +106,8 @@ export async function transformHairWithGemini(
       success: true,
       imageUrl,
       usedAI: true,
-      prompt: enhancedPrompt
+      prompt: enhancedPrompt,
+      usedReference: false
     }
 
   } catch (error: any) {
@@ -168,12 +170,26 @@ TRANSFORMATION TASK:
 ${instruction}
 
 CRITICAL RULES:
-1. READ THE TASK CAREFULLY - if it says "pixie cut" then create a pixie cut, if it says "change color to red" then only change the color
-2. PRESERVE EVERYTHING ELSE - Keep the person's face, skin, eyes, expression, background, and clothing exactly identical
-3. ONLY MODIFY THE HAIR - Do not change any other aspect of the image
-4. FOLLOW THE INSTRUCTION PRECISELY - Do not add your own creative interpretation
+1. READ THE TASK CAREFULLY - if it says "Long Layers" then create long layered hair, if it says "pixie cut" then create a short pixie cut, if it says "change color to red" then only change the color
+2. HAIR LENGTH CHANGES: If the instruction mentions "long", "layers", "waves", or "length", you MUST change the hair length significantly - make short hair longer or add volume and layers
+3. PRESERVE EVERYTHING ELSE - Keep the person's face, skin, eyes, expression, background, and clothing exactly identical
+4. ONLY MODIFY THE HAIR - Do not change any other aspect of the image
+5. FOLLOW THE INSTRUCTION PRECISELY - Do not add your own creative interpretation
+6. MAKE VISIBLE CHANGES - The transformation should be clearly noticeable, especially for length and style changes
 
-Generate the transformed image now.`
+SPECIFIC GUIDANCE:
+- "Long Layers" = Create long, layered hairstyle with visible length and texture
+- "Pixie Cut" = Create very short, cropped hairstyle
+- "Bob Cut" = Create shoulder-length blunt or angled cut
+- "Waves" = Add wave texture while maintaining or increasing length
+- "Butterfly Haircut" = Add dramatic face-framing layers that create wing-like effect
+- "Shag Cut" = Create heavy layering with choppy, textured ends
+- "Wolf Cut" = Combine shag and mullet with dramatic layering
+- Color changes = Only modify hair color, keep length and style the same
+
+IMPORTANT: For layered cuts (butterfly, shag, wolf), make the layers VERY OBVIOUS and dramatic - the change should be clearly visible!
+
+Generate the transformed image now with clear, visible changes to match the instruction.`
 }
 
 /**
@@ -247,7 +263,8 @@ async function createFallbackTransformation(
       imageUrl: publicUrl,
       usedAI: false,
       error: `Demo Mode: ${reason}`,
-      prompt: 'Fallback transformation - enable billing for AI generation'
+      prompt: 'Fallback transformation - enable billing for AI generation',
+      usedReference: false
     }
 
   } catch (error: any) {
@@ -255,7 +272,8 @@ async function createFallbackTransformation(
     return {
       success: false,
       error: `Transformation failed: ${error.message}`,
-      usedAI: false
+      usedAI: false,
+      usedReference: false
     }
   }
 }

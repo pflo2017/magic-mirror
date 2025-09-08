@@ -102,6 +102,7 @@ export async function POST(request: NextRequest) {
     let usedAI = false
     let aiError: string | undefined
     let aiPromptUsed: string | undefined
+    let usesReference = false
     
     if (process.env.GEMINI_API_KEY) {
       console.log('🎨 Processing with Gemini 2.5 Flash Image (Nano Banana):', {
@@ -110,27 +111,48 @@ export async function POST(request: NextRequest) {
       })
 
       try {
-        // Import and use the production-ready Gemini implementation
-        const { transformHairWithGemini } = await import('@/lib/gemini-production')
-        
-        console.log('🚀 Using official Google Gemini 2.5 Flash Image API...')
-        
         // Extract base64 data from the data URL
         const base64Data = image_url.split(',')[1]
         
-        const aiResult = await transformHairWithGemini(
+        // Try reference-based transformation first for ALL styles
+        console.log('🖼️ Attempting reference-based transformation for:', style.name)
+        console.log('🔍 Style data:', { name: style.name, prompt: style.prompt })
+        
+        // Import and use the reference-based implementation
+        const { transformHairWithReference } = await import('@/lib/gemini-with-reference')
+        
+        let aiResult = await transformHairWithReference(
           base64Data,
-          style.prompt,
+          { ...style.prompt, name: style.name },
           session_token
         )
+        
+        console.log('📊 Reference transformation result:', { success: aiResult.success, hasImageUrl: !!aiResult.imageUrl, error: aiResult.error, usedReference: aiResult.usedReference })
+        
+        // If reference-based transformation failed due to missing reference image, fall back to standard
+        if (!aiResult.success && aiResult.error?.includes('No reference image found')) {
+          console.log('🚀 Falling back to standard Gemini transformation (no reference image available)...')
+          // Import and use the standard implementation
+          const { transformHairWithGemini } = await import('@/lib/gemini-production')
+          
+          aiResult = await transformHairWithGemini(
+            base64Data,
+            style.prompt,
+            session_token
+          )
+          usesReference = false
+        } else {
+          usesReference = true
+        }
 
         if (aiResult.success && aiResult.imageUrl) {
           generatedImageUrl = aiResult.imageUrl
-          usedAI = aiResult.usedAI
+          usedAI = aiResult.usedAI || true // Reference system always uses AI
           aiError = aiResult.error
           aiPromptUsed = aiResult.prompt
-          console.log(`✅ Hair transformation completed! AI: ${usedAI}`)
+          console.log(`✅ Hair transformation completed! AI: ${usedAI}, Reference: ${usesReference}`)
         } else {
+          console.error(`❌ Transformation failed:`, aiResult.error)
           throw new Error(aiResult.error || 'Hair transformation failed')
         }
       } catch (error: any) {
@@ -180,7 +202,8 @@ export async function POST(request: NextRequest) {
         used_ai: usedAI,
         error: aiError,
         model: usedAI ? 'gemini-2.5-flash-image-preview' : 'demo',
-        note: usedAI ? 'Powered by Google Gemini Nano Banana' : 'Enable billing for AI transformations',
+        note: usedAI ? (usesReference ? 'Enhanced with reference image - Powered by Google Gemini' : 'Powered by Google Gemini Nano Banana') : 'Enable billing for AI transformations',
+        uses_reference: usedAI && usesReference,
         prompt_used: aiPromptUsed
       },
       style: {

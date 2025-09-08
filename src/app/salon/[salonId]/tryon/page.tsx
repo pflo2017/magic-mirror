@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
-import { Camera, Upload, Sparkles, ArrowLeft, Download, Share2, Clock, RotateCcw, Palette, User, Scissors, ChevronRight, ChevronDown, Play, Pause, Volume2, VolumeX, X, Maximize2, MessageCircle, Instagram, Facebook, Mail } from 'lucide-react'
+import { Camera, Upload, Sparkles, ArrowLeft, Share2, Clock, RotateCcw, Palette, User, Scissors, ChevronRight, X, Maximize2 } from 'lucide-react'
 
 interface Style {
   id: string
@@ -42,7 +42,6 @@ export default function ClientTryOnInterface() {
   const [aiPromptUsed, setAiPromptUsed] = useState<string | null>(null)
   const [showImageModal, setShowImageModal] = useState(false)
   const [modalImage, setModalImage] = useState<{src: string, alt: string} | null>(null)
-  const [showShareModal, setShowShareModal] = useState(false)
   
   // Async processing state
   const [currentJobId, setCurrentJobId] = useState<string | null>(null)
@@ -106,6 +105,20 @@ export default function ClientTryOnInterface() {
       }
     }
   }, [sessionToken, sessionTime])
+
+  // Keyboard event listener for ESC key to close modals
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        if (showImageModal) {
+          closeImageModal()
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [showImageModal])
 
   const validateSession = async () => {
     if (!sessionToken) return
@@ -321,7 +334,6 @@ export default function ClientTryOnInterface() {
     setShowPrompt(false)
     setShowImageModal(false)
     setModalImage(null)
-    setShowShareModal(false)
     setStep('welcome')
   }
 
@@ -336,57 +348,129 @@ export default function ClientTryOnInterface() {
     setModalImage(null)
   }
 
-  // Download functionality
-  const downloadImage = async (imageUrl: string, filename: string) => {
+  // Save to photo gallery functionality - simulates long press behavior
+  const saveToGallery = async (imageUrl: string) => {
     try {
       const response = await fetch(imageUrl)
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
       
-      const link = document.createElement('a')
-      link.href = url
-      link.download = filename
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
+      // Create a temporary image element to simulate the long-press behavior
+      const tempImg = document.createElement('img')
+      tempImg.src = url
+      tempImg.style.position = 'fixed'
+      tempImg.style.top = '50%'
+      tempImg.style.left = '50%'
+      tempImg.style.transform = 'translate(-50%, -50%)'
+      tempImg.style.maxWidth = '90vw'
+      tempImg.style.maxHeight = '90vh'
+      tempImg.style.zIndex = '10000'
+      tempImg.style.backgroundColor = 'white'
+      tempImg.style.padding = '10px'
+      tempImg.style.borderRadius = '10px'
+      tempImg.style.boxShadow = '0 4px 20px rgba(0,0,0,0.3)'
       
-      window.URL.revokeObjectURL(url)
+      // Create overlay
+      const overlay = document.createElement('div')
+      overlay.style.position = 'fixed'
+      overlay.style.top = '0'
+      overlay.style.left = '0'
+      overlay.style.width = '100%'
+      overlay.style.height = '100%'
+      overlay.style.backgroundColor = 'rgba(0,0,0,0.8)'
+      overlay.style.zIndex = '9999'
+      overlay.style.display = 'flex'
+      overlay.style.alignItems = 'center'
+      overlay.style.justifyContent = 'center'
+      
+      // Add close instruction at the bottom
+      const instruction = document.createElement('div')
+      instruction.innerHTML = '📱 Hold and press the image to save or share<br/>Use your device\'s built-in options<br/>Tap outside to close'
+      instruction.style.position = 'absolute'
+      instruction.style.bottom = '40px'
+      instruction.style.left = '50%'
+      instruction.style.transform = 'translateX(-50%)'
+      instruction.style.color = 'white'
+      instruction.style.textAlign = 'center'
+      instruction.style.fontSize = '16px'
+      instruction.style.fontWeight = 'bold'
+      instruction.style.textShadow = '0 2px 4px rgba(0,0,0,0.8)'
+      instruction.style.backgroundColor = 'rgba(0,0,0,0.8)'
+      instruction.style.padding = '16px 24px'
+      instruction.style.borderRadius = '16px'
+      instruction.style.backdropFilter = 'blur(10px)'
+      instruction.style.border = '1px solid rgba(255,255,255,0.2)'
+      instruction.style.zIndex = '10001'
+      instruction.style.animation = 'fadeIn 0.3s ease-out'
+      instruction.style.maxWidth = '90vw'
+      instruction.style.boxSizing = 'border-box'
+      
+      // Add CSS animation if not already added
+      if (!document.getElementById('saveToGalleryStyles')) {
+        const style = document.createElement('style')
+        style.id = 'saveToGalleryStyles'
+        style.textContent = `
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+          }
+        `
+        document.head.appendChild(style)
+      }
+      
+      // Add a subtle header instruction
+      const headerInstruction = document.createElement('div')
+      headerInstruction.innerHTML = 'Long press the image below ↓'
+      headerInstruction.style.position = 'absolute'
+      headerInstruction.style.top = '40px'
+      headerInstruction.style.left = '50%'
+      headerInstruction.style.transform = 'translateX(-50%)'
+      headerInstruction.style.color = 'white'
+      headerInstruction.style.textAlign = 'center'
+      headerInstruction.style.fontSize = '14px'
+      headerInstruction.style.fontWeight = '500'
+      headerInstruction.style.textShadow = '0 2px 4px rgba(0,0,0,0.8)'
+      headerInstruction.style.backgroundColor = 'rgba(0,0,0,0.6)'
+      headerInstruction.style.padding = '8px 16px'
+      headerInstruction.style.borderRadius = '20px'
+      headerInstruction.style.backdropFilter = 'blur(10px)'
+      headerInstruction.style.border = '1px solid rgba(255,255,255,0.1)'
+      headerInstruction.style.zIndex = '10001'
+      headerInstruction.style.animation = 'fadeIn 0.3s ease-out'
+      
+      // Add elements to page
+      document.body.appendChild(overlay)
+      overlay.appendChild(tempImg)
+      overlay.appendChild(headerInstruction)
+      overlay.appendChild(instruction)
+      
+      // Close when clicking outside the image
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          document.body.removeChild(overlay)
+          window.URL.revokeObjectURL(url)
+        }
+      })
+      
+      // Close when pressing escape
+      const handleEscape = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          document.body.removeChild(overlay)
+          window.URL.revokeObjectURL(url)
+          document.removeEventListener('keydown', handleEscape)
+        }
+      }
+      document.addEventListener('keydown', handleEscape)
+      
+      // Prevent image drag
+      tempImg.addEventListener('dragstart', (e) => e.preventDefault())
+      
     } catch (error) {
-      console.error('Download failed:', error)
-      alert('Failed to download image. Please try again.')
+      console.error('Save failed:', error)
+      alert('Failed to load image. Please try again.')
     }
   }
 
-  // Social sharing functionality
-  const shareToSocial = (platform: string) => {
-    if (!resultImage) return
-
-    const shareText = `Check out my new hairstyle transformation! 💇‍♀️✨`
-    const shareUrl = window.location.href
-    
-    let url = ''
-    
-    switch (platform) {
-      case 'whatsapp':
-        url = `https://wa.me/?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`
-        break
-      case 'facebook':
-        url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`
-        break
-      case 'instagram':
-        // Instagram doesn't support direct sharing via URL, so we'll copy to clipboard
-        navigator.clipboard.writeText(shareText + ' ' + shareUrl)
-        alert('Link copied to clipboard! You can now paste it in Instagram.')
-        return
-      case 'email':
-        url = `mailto:?subject=${encodeURIComponent('My Hair Transformation')}&body=${encodeURIComponent(shareText + '\n\n' + shareUrl)}`
-        break
-      default:
-        return
-    }
-    
-    window.open(url, '_blank', 'width=600,height=400')
-  }
 
   if (isLoading) {
     return (
@@ -599,8 +683,12 @@ export default function ClientTryOnInterface() {
                   className="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 hover:bg-white/20 transition-all group"
                 >
                   <div className="flex items-center space-x-4">
-                    <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full flex items-center justify-center">
-                      <User className="w-8 h-8 text-white" />
+                    <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full flex items-center justify-center overflow-hidden">
+                      <img 
+                        src="/icons/women_profile.svg" 
+                        alt="Women's Profile" 
+                        className="w-10 h-10"
+                      />
                     </div>
                     <div className="text-left flex-1">
                       <h3 className="text-white font-semibold text-lg">Women's Styles</h3>
@@ -615,8 +703,12 @@ export default function ClientTryOnInterface() {
                   className="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 hover:bg-white/20 transition-all group"
                 >
                   <div className="flex items-center space-x-4">
-                    <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center">
-                      <User className="w-8 h-8 text-white" />
+                    <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center overflow-hidden">
+                      <img 
+                        src="/icons/men_profile.svg" 
+                        alt="Men's Profile" 
+                        className="w-10 h-10"
+                      />
                     </div>
                     <div className="text-left flex-1">
                       <h3 className="text-white font-semibold text-lg">Men's Styles</h3>
@@ -707,15 +799,38 @@ export default function ClientTryOnInterface() {
                     className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 hover:bg-white/20 transition-all group"
                   >
                     <div className="aspect-square bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-xl mb-3 flex items-center justify-center">
-                      {style.image_url ? (
+                      {/* Hair Color Swatch */}
+                      {(style.category === 'women_colors' || style.category === 'men_colors') && style.prompt?.hex_color ? (
+                        <div className="w-full h-full rounded-xl flex items-center justify-center relative overflow-hidden">
+                          <div 
+                            className="w-16 h-16 rounded-full border-4 border-white/30 shadow-lg"
+                            style={{ backgroundColor: style.prompt.hex_color }}
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-xl" />
+                        </div>
+                      ) : style.image_url ? (
                         <img 
                           src={style.image_url} 
                           alt={style.name}
                           className="w-full h-full object-cover rounded-xl"
                         />
                       ) : (
-                        <Sparkles className="w-8 h-8 text-white/60" />
+                        // Try to load reference image from public folder
+                        <img 
+                          src={`/hairstyle-previews/${style.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}.png`}
+                          alt={style.name}
+                          className="w-full h-full object-cover rounded-xl"
+                          onError={(e) => {
+                            // If reference image fails to load, show sparkle icon
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            const sparkleIcon = target.nextElementSibling as HTMLElement;
+                            if (sparkleIcon) sparkleIcon.style.display = 'block';
+                          }}
+                        />
                       )}
+                      {/* Fallback sparkle icon (hidden by default) */}
+                      <Sparkles className="w-8 h-8 text-white/60 hidden" />
                     </div>
                     <h3 className="text-white font-medium text-sm group-hover:text-purple-300 transition-colors">
                       {style.name}
@@ -762,19 +877,19 @@ export default function ClientTryOnInterface() {
                 <p className="text-white/70">How do you like your transformation?</p>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 mb-8">
-                {/* Before */}
+              <div className="grid grid-cols-2 gap-4 mb-8 items-start">
+                {/* Original */}
                 <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
                   <div 
-                    className="aspect-square rounded-xl overflow-hidden mb-3 cursor-pointer relative group"
-                    onClick={() => selectedImage && openImageModal(selectedImage, 'Before')}
+                    className="rounded-xl overflow-hidden mb-3 cursor-pointer relative group"
+                    onClick={() => selectedImage && openImageModal(selectedImage, 'Original')}
                   >
                     {selectedImage && (
                       <>
                         <img 
                           src={selectedImage} 
-                          alt="Before"
-                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                          alt="Original"
+                          className="w-full h-auto object-contain transition-transform group-hover:scale-105"
                         />
                         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                           <Maximize2 className="w-6 h-6 text-white" />
@@ -782,21 +897,21 @@ export default function ClientTryOnInterface() {
                       </>
                     )}
                   </div>
-                  <p className="text-white/70 text-center text-sm">Before</p>
+                  <p className="text-white/70 text-center text-sm">Original</p>
                 </div>
 
-                {/* After */}
+                {/* New Look */}
                 <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
                   <div 
-                    className="aspect-square rounded-xl overflow-hidden mb-3 cursor-pointer relative group"
-                    onClick={() => resultImage && openImageModal(resultImage, 'After')}
+                    className="rounded-xl overflow-hidden mb-3 cursor-pointer relative group"
+                    onClick={() => resultImage && openImageModal(resultImage, 'New Look')}
                   >
                     {resultImage && (
                       <>
                         <img 
                           src={resultImage} 
-                          alt="After"
-                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                          alt="New Look"
+                          className="w-full h-auto object-contain transition-transform group-hover:scale-105"
                         />
                         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                           <Maximize2 className="w-6 h-6 text-white" />
@@ -804,7 +919,7 @@ export default function ClientTryOnInterface() {
                       </>
                     )}
                   </div>
-                  <p className="text-white/70 text-center text-sm">After</p>
+                  <p className="text-white/70 text-center text-sm">New Look</p>
                 </div>
               </div>
 
@@ -874,23 +989,13 @@ export default function ClientTryOnInterface() {
                   <span>Try Another Style</span>
                 </button>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <button 
-                    onClick={() => resultImage && downloadImage(resultImage, `hair-transformation-${Date.now()}.jpg`)}
-                    className="bg-white/10 backdrop-blur-sm border border-white/20 text-white py-3 rounded-xl font-medium hover:bg-white/20 transition-all flex items-center justify-center space-x-2"
-                  >
-                    <Download className="w-5 h-5" />
-                    <span>Save</span>
-                  </button>
-                  
-                  <button 
-                    onClick={() => setShowShareModal(true)}
-                    className="bg-white/10 backdrop-blur-sm border border-white/20 text-white py-3 rounded-xl font-medium hover:bg-white/20 transition-all flex items-center justify-center space-x-2"
-                  >
-                    <Share2 className="w-5 h-5" />
-                    <span>Share</span>
-                  </button>
-                </div>
+                <button 
+                  onClick={() => resultImage && saveToGallery(resultImage)}
+                  className="w-full bg-white/10 backdrop-blur-sm border border-white/20 text-white py-4 rounded-xl font-medium hover:bg-white/20 transition-all flex items-center justify-center space-x-2"
+                >
+                  <Share2 className="w-5 h-5" />
+                  <span>Save & Share</span>
+                </button>
 
                 <button
                   onClick={resetSession}
@@ -907,82 +1012,47 @@ export default function ClientTryOnInterface() {
 
       {/* Image Modal */}
       {showImageModal && modalImage && (
-        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
-          <div className="relative max-w-4xl max-h-full">
-            <button
-              onClick={closeImageModal}
-              className="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors"
-            >
-              <X className="w-8 h-8" />
-            </button>
+        <div 
+          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+          onClick={closeImageModal}
+        >
+          <div className="relative max-w-4xl max-h-full" onClick={(e) => e.stopPropagation()}>
+            {/* Top Bar with Back Button */}
+            <div className="absolute -top-16 left-0 right-0 flex items-center justify-between">
+              <button
+                onClick={closeImageModal}
+                className="flex items-center space-x-2 text-white hover:text-gray-300 transition-colors bg-black/50 backdrop-blur-sm rounded-lg px-4 py-2"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                <span className="text-sm font-medium">Back</span>
+              </button>
+              <button
+                onClick={closeImageModal}
+                className="text-white hover:text-gray-300 transition-colors bg-black/50 backdrop-blur-sm rounded-lg p-2"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
             <img
               src={modalImage.src}
               alt={modalImage.alt}
               className="max-w-full max-h-[90vh] object-contain rounded-lg"
             />
+            
+            {/* Bottom Label */}
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 backdrop-blur-sm rounded-lg px-4 py-2">
               <p className="text-white text-sm font-medium">{modalImage.alt}</p>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Share Modal */}
-      {showShareModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-900">Share Your Transformation</h3>
-              <button
-                onClick={() => setShowShareModal(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => shareToSocial('whatsapp')}
-                className="flex flex-col items-center p-4 bg-green-50 hover:bg-green-100 rounded-xl transition-colors"
-              >
-                <MessageCircle className="w-8 h-8 text-green-600 mb-2" />
-                <span className="text-sm font-medium text-green-700">WhatsApp</span>
-              </button>
-
-              <button
-                onClick={() => shareToSocial('facebook')}
-                className="flex flex-col items-center p-4 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors"
-              >
-                <Facebook className="w-8 h-8 text-blue-600 mb-2" />
-                <span className="text-sm font-medium text-blue-700">Facebook</span>
-              </button>
-
-              <button
-                onClick={() => shareToSocial('instagram')}
-                className="flex flex-col items-center p-4 bg-pink-50 hover:bg-pink-100 rounded-xl transition-colors"
-              >
-                <Instagram className="w-8 h-8 text-pink-600 mb-2" />
-                <span className="text-sm font-medium text-pink-700">Instagram</span>
-              </button>
-
-              <button
-                onClick={() => shareToSocial('email')}
-                className="flex flex-col items-center p-4 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors"
-              >
-                <Mail className="w-8 h-8 text-gray-600 mb-2" />
-                <span className="text-sm font-medium text-gray-700">Email</span>
-              </button>
-            </div>
-
-            <div className="mt-6 p-4 bg-gray-50 rounded-xl">
-              <p className="text-xs text-gray-600 text-center">
-                💡 Tip: For Instagram, the link will be copied to your clipboard. Paste it in your story or post!
-              </p>
+            
+            {/* Mobile: Tap anywhere instruction */}
+            <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-black/50 backdrop-blur-sm rounded-lg px-3 py-1 md:hidden">
+              <p className="text-white text-xs opacity-75">Tap anywhere to close</p>
             </div>
           </div>
         </div>
       )}
+
     </div>
   )
 }
