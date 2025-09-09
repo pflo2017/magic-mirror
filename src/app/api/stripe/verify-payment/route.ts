@@ -3,7 +3,7 @@ import Stripe from 'stripe'
 import { supabaseAdmin } from '@/lib/supabase-server'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-06-20',
+  apiVersion: '2025-08-27.basil',
 })
 
 export async function POST(request: NextRequest) {
@@ -119,7 +119,22 @@ export async function POST(request: NextRequest) {
       images_used: 0, // This is a purchase, not usage
       images_included: 0, // This is overage images
       overage_images: imagesCount,
-      payment_status: 'completed'
+      payment_status: 'completed',
+      // Stripe transaction tracking
+      stripe_checkout_session_id: session_id,
+      stripe_payment_intent_id: session.payment_intent as string,
+      stripe_customer_id: session.customer as string || null,
+      payment_method_type: 'card', // Stripe checkout default
+      currency: session.currency?.toUpperCase() || 'USD',
+      transaction_type: package_type || 'overage_purchase',
+      description: `Purchased ${imagesCount} additional images via Stripe Checkout`,
+      metadata: {
+        stripe_session_id: session_id,
+        stripe_amount_total: session.amount_total,
+        stripe_payment_status: session.payment_status,
+        original_metadata: session.metadata
+      },
+      processed_at: new Date().toISOString()
     }
     
     console.log('📝 Billing data:', billingData)
