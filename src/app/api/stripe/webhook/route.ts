@@ -1,196 +1,119 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { supabaseAdmin } from '@/lib/supabase-server'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-06-20',
 })
 
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
+
 export async function POST(request: NextRequest) {
   try {
+    console.log('🔔 Webhook received at:', new Date().toISOString())
+    
     const body = await request.text()
-    const signature = request.headers.get('stripe-signature')
+    const signature = request.headers.get('stripe-signature')!
 
-    if (!signature) {
-      return NextResponse.json(
-        { error: 'Missing Stripe signature' },
-        { status: 400 }
-      )
-    }
+    console.log('📝 Webhook body length:', body.length)
+    console.log('🔐 Signature present:', !!signature)
 
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
     let event: Stripe.Event
 
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
+      console.log('✅ Webhook signature verified successfully')
     } catch (err) {
-      console.error('Webhook signature verification failed:', err)
+      console.error('❌ Webhook signature verification failed:', err)
       return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
     }
 
-    const supabase = createServerSupabaseClient()
+    console.log(`🔔 Processing Stripe webhook: ${event.type}`)
 
-    switch (event.type) {
-      case 'customer.subscription.created':
-      case 'customer.subscription.updated': {
-        const subscription = event.data.object as Stripe.Subscription
-        const customerId = subscription.customer as string
-        
-        // Find salon by stripe customer ID
-        const { data: salon } = await supabase
-          .from('salons')
-          .select('id')
-          .eq('stripe_customer_id', customerId)
-          .single()
+    // Handle successful checkout
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object as Stripe.Checkout.Session
+      
+      console.log(`✅ Checkout completed: ${session.id}`)
+      console.log('📋 Metadata:', session.metadata)
 
-        if (!salon) {
-          console.error('No salon found for customer:', customerId)
-          break
-        }
+      // Extract metadata
+      const {
+        salon_id,
+        salon_name,
+        package_type,
+        images_count,
+        price
+      } = session.metadata || {}
 
-        // Map subscription status
-        let status = 'inactive'
-        switch (subscription.status) {
-          case 'active':
-            status = 'active'
-            break
-          case 'past_due':
-            status = 'past_due'
-            break
-          case 'canceled':
-          case 'unpaid':
-            status = 'cancelled'
-            break
-        }
-
-        // Get plan details from price ID
-        const priceId = subscription.items.data[0]?.price.id
-        let planName = 'starter'
-        let maxAiUses = 100
-        let sessionDuration = 30
-
-        // Map price IDs to plans
-        switch (priceId) {
-          case process.env.STRIPE_STARTER_PRICE_ID:
-            planName = 'starter'
-            maxAiUses = 100
-            sessionDuration = 30
-            break
-          case process.env.STRIPE_PROFESSIONAL_PRICE_ID:
-            planName = 'professional'
-            maxAiUses = 500
-            sessionDuration = 60
-            break
-          case process.env.STRIPE_ENTERPRISE_PRICE_ID:
-            planName = 'enterprise'
-            maxAiUses = -1 // unlimited
-            sessionDuration = 120
-            break
-        }
-
-        // Update salon
-        await supabase
-          .from('salons')
-          .update({
-            stripe_subscription_id: subscription.id,
-            subscription_status: status,
-            subscription_plan: planName,
-            max_ai_uses: maxAiUses,
-            session_duration: sessionDuration,
-            subscription_current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-            subscription_current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', salon.id)
-
-        console.log(`Updated salon ${salon.id} subscription: ${status}`)
-        break
+      if (!salon_id || !images_count || !price) {
+        console.error('❌ Missing required metadata in Checkout Session')
+        return NextResponse.json({ error: 'Missing metadata' }, { status: 400 })
       }
 
-      case 'customer.subscription.deleted': {
-        const subscription = event.data.object as Stripe.Subscription
-        const customerId = subscription.customer as string
-        
-        // Find salon and downgrade to free
-        const { data: salon } = await supabase
-          .from('salons')
-          .select('id')
-          .eq('stripe_customer_id', customerId)
-          .single()
+      const imagesCount = parseInt(images_count)
+      const amount = parseFloat(price)
 
-        if (salon) {
-          await supabase
-            .from('salons')
-            .update({
-              subscription_status: 'cancelled',
-              subscription_plan: 'free',
-              max_ai_uses: 10, // Free tier
-              session_duration: 15,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', salon.id)
-
-          console.log(`Canceled subscription for salon ${salon.id}`)
+      // Get current salon data
+      const { data: salon, error: salonError } = await supabaseAdmin
+        .from('salons')
+        .select('images_remaining_this_cycle, total_images_available')
+        .eq('id', salon_id)
+        .single() as { 
+          data: { 
+            images_remaining_this_cycle: number
+            total_images_available: number 
+          } | null, 
+          error: any 
         }
-        break
+
+      if (salonError || !salon) {
+        console.error('❌ Failed to fetch salon:', salonError?.message)
+        return NextResponse.json({ error: 'Salon not found' }, { status: 404 })
       }
 
-      case 'invoice.payment_succeeded': {
-        const invoice = event.data.object as Stripe.Invoice
-        const subscriptionId = invoice.subscription as string
-        
-        if (subscriptionId) {
-          // Reset usage counters for new billing period
-          await supabase
-            .from('salons')
-            .update({
-              total_ai_generations_used: 0,
-              subscription_status: 'active',
-              updated_at: new Date().toISOString()
-            })
-            .eq('stripe_subscription_id', subscriptionId)
+      // Update salon's image counts
+      const { error: updateError } = await (supabaseAdmin as any)
+        .from('salons')
+        .update({
+          images_remaining_this_cycle: salon.images_remaining_this_cycle + imagesCount,
+          total_images_available: salon.total_images_available + imagesCount
+        })
+        .eq('id', salon_id)
 
-          console.log(`Payment succeeded, reset usage for subscription ${subscriptionId}`)
-        }
-        break
+      if (updateError) {
+        console.error('❌ Failed to update salon images:', updateError)
+        return NextResponse.json({ error: 'Failed to update salon' }, { status: 500 })
       }
 
-      case 'invoice.payment_failed': {
-        const invoice = event.data.object as Stripe.Invoice
-        const customerId = invoice.customer as string
-        
-        // Mark salon as past due
-        const { data: salon } = await supabase
-          .from('salons')
-          .select('id')
-          .eq('stripe_customer_id', customerId)
-          .single()
+      // Record the purchase in billing history
+      const { error: billingError } = await (supabaseAdmin as any)
+        .from('billing_history')
+        .insert({
+          salon_id,
+          transaction_type: 'overage_purchase',
+          amount,
+          description: `Purchased ${imagesCount} additional images via Stripe`,
+          images_purchased: imagesCount,
+          stripe_payment_intent_id: session.payment_intent as string,
+          created_at: new Date().toISOString()
+        })
 
-        if (salon) {
-          await supabase
-            .from('salons')
-            .update({
-              subscription_status: 'past_due',
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', salon.id)
-
-          console.log(`Payment failed for salon ${salon.id}`)
-        }
-        break
+      if (billingError) {
+        console.error('❌ Failed to record billing history:', billingError)
+        // Don't fail the webhook for billing history errors
       }
 
-      default:
-        console.log(`Unhandled Stripe event: ${event.type}`)
+      console.log(`🎉 Successfully processed payment: +${imagesCount} images for salon ${salon_name}`)
     }
 
     return NextResponse.json({ received: true })
 
   } catch (error) {
-    console.error('Stripe webhook error:', error)
+    console.error('❌ Webhook processing error:', error)
     return NextResponse.json(
-      { error: 'Webhook handling failed' },
-      { status: 400 }
+      { error: 'Webhook processing failed' },
+      { status: 500 }
     )
   }
 }

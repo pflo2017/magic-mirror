@@ -23,6 +23,7 @@ import {
   ExternalLink
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import PaymentSuccessModal from '@/components/PaymentSuccessModal'
 
 interface SalonAnalytics {
   total_sessions: number
@@ -101,9 +102,35 @@ export default function Dashboard() {
   const [sessionsLoading, setSessionsLoading] = useState(false)
   const [subscription, setSubscription] = useState<any>(null)
   const [subscriptionLoading, setSubscriptionLoading] = useState(false)
+  const [paymentSuccess, setPaymentSuccess] = useState<{
+    isOpen: boolean
+    imagesAdded: number
+    newBalance: number
+  }>({
+    isOpen: false,
+    imagesAdded: 0,
+    newBalance: 0
+  })
 
   useEffect(() => {
     loadDashboardData()
+    
+    // Handle Stripe payment result
+    const urlParams = new URLSearchParams(window.location.search)
+    const paymentStatus = urlParams.get('payment')
+    const images = urlParams.get('images')
+    const sessionId = urlParams.get('session_id')
+    
+    if (paymentStatus === 'success' && images && sessionId) {
+      // Clean URL first
+      window.history.replaceState({}, document.title, '/dashboard')
+      
+      // Process the successful payment by adding images to account
+      handleSuccessfulPayment(sessionId, parseInt(images))
+    } else if (paymentStatus === 'cancelled') {
+      // Clean URL
+      window.history.replaceState({}, document.title, '/dashboard')
+    }
   }, [])
 
   useEffect(() => {
@@ -406,14 +433,52 @@ export default function Dashboard() {
     }
   }
 
-  const handlePurchaseOverage = async (images: number, price: number) => {
+  const handleSuccessfulPayment = async (sessionId: string, imagesAdded: number) => {
     try {
-      const response = await fetch('/api/salon/subscription', {
+      console.log(`🔍 Verifying payment for session: ${sessionId}`)
+      
+      const response = await fetch('/api/stripe/verify-payment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        credentials: 'include',
+        body: JSON.stringify({
+          session_id: sessionId
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        console.log('✅ Payment verified:', data)
+        
+        // Reload subscription data to get updated balance
+        await loadSubscriptionData()
+        
+        // Show success modal with actual new balance
+        setPaymentSuccess({
+          isOpen: true,
+          imagesAdded: data.images_added,
+          newBalance: data.new_balance
+        })
+      } else {
+        const errorData = await response.json()
+        console.error('❌ Payment verification failed:', errorData)
+        alert(`Payment verification failed: ${errorData.error}`)
+      }
+    } catch (error) {
+      console.error('❌ Payment verification error:', error)
+      alert('Failed to verify payment. Please contact support.')
+    }
+  }
+
+  const handlePurchaseOverage = async (images: number, price: number) => {
+    try {
+      // Create Stripe Checkout Session (redirects to Stripe's hosted page)
+      const response = await fetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
           package_type: 'overage',
           images_count: images,
@@ -423,18 +488,23 @@ export default function Dashboard() {
 
       if (response.ok) {
         const data = await response.json()
-        alert(`Successfully purchased ${images} additional images!`)
-        // Reload subscription data to show updated balance
-        loadSubscriptionData()
+        
+        // Redirect to Stripe's official checkout page
+        if (data.checkout_url) {
+          window.location.href = data.checkout_url
+        } else {
+          alert('Failed to create checkout session')
+        }
       } else {
         const errorData = await response.json()
-        alert(`Failed to purchase images: ${errorData.error || 'Unknown error'}`)
+        alert(`Failed to create payment: ${errorData.error || 'Unknown error'}`)
       }
     } catch (error) {
       console.error('Purchase error:', error)
       alert('Failed to process purchase. Please try again.')
     }
   }
+
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -1230,6 +1300,14 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {/* Payment Success Modal */}
+      <PaymentSuccessModal
+        isOpen={paymentSuccess.isOpen}
+        onClose={() => setPaymentSuccess({ isOpen: false, imagesAdded: 0, newBalance: 0 })}
+        imagesAdded={paymentSuccess.imagesAdded}
+        newBalance={paymentSuccess.newBalance}
+      />
     </div>
   )
 }
