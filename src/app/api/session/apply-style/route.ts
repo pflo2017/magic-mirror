@@ -43,10 +43,36 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check AI usage limit
+    // Check session AI usage limit
     if (session.ai_uses_count >= session.max_ai_uses) {
       return NextResponse.json(
-        { error: 'AI usage limit reached' },
+        { error: 'Session AI usage limit reached' },
+        { status: 429 }
+      )
+    }
+
+    // Check salon's monthly image limit
+    const { data: salon, error: salonError } = await supabaseAdmin
+      .from('salons')
+      .select('images_remaining_this_cycle, total_images_available, subscription_status')
+      .eq('id', session.salon_id)
+      .single()
+
+    if (salonError || !salon) {
+      return NextResponse.json(
+        { error: 'Salon not found' },
+        { status: 404 }
+      )
+    }
+
+    // Check if salon has images remaining
+    if (salon.images_remaining_this_cycle <= 0) {
+      return NextResponse.json(
+        { 
+          error: 'Monthly image limit reached', 
+          message: 'Please purchase additional images to continue',
+          needs_overage: true
+        },
         { status: 429 }
       )
     }
@@ -172,13 +198,22 @@ export async function POST(request: NextRequest) {
       aiError = 'API key not configured'
     }
 
-    // 5. Update session usage count
+    // 5. Update session usage count and salon image count
     await supabaseAdmin
       .from('sessions')
       .update({ 
         ai_uses_count: session.ai_uses_count + 1
       })
       .eq('id', session_token)
+
+    // Update salon's image usage (decrement remaining images)
+    await supabaseAdmin
+      .from('salons')
+      .update({ 
+        images_used_this_cycle: salon.images_used_this_cycle + 1,
+        images_remaining_this_cycle: salon.images_remaining_this_cycle - 1
+      })
+      .eq('id', session.salon_id)
 
     // 6. Store the generation record
     const insertResult = await supabaseAdmin

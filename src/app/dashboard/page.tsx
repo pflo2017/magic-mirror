@@ -99,6 +99,8 @@ export default function Dashboard() {
   const [sessions, setSessions] = useState<SessionData[]>([])
   const [sessionsSummary, setSessionsSummary] = useState<any>(null)
   const [sessionsLoading, setSessionsLoading] = useState(false)
+  const [subscription, setSubscription] = useState<any>(null)
+  const [subscriptionLoading, setSubscriptionLoading] = useState(false)
 
   useEffect(() => {
     loadDashboardData()
@@ -107,6 +109,9 @@ export default function Dashboard() {
   useEffect(() => {
     if (activeTab === 'sessions' || activeTab === 'overview') {
       loadSessionsData()
+    }
+    if (activeTab === 'settings' || activeTab === 'overview') {
+      loadSubscriptionData()
     }
   }, [activeTab])
 
@@ -227,6 +232,29 @@ export default function Dashboard() {
     }
   }
 
+  const loadSubscriptionData = async () => {
+    setSubscriptionLoading(true)
+    try {
+      const response = await fetch('/api/salon/subscription', {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setSubscription(data.subscription)
+      } else {
+        console.error('Failed to load subscription data')
+      }
+    } catch (error) {
+      console.error('Subscription data error:', error)
+    } finally {
+      setSubscriptionLoading(false)
+    }
+  }
+
   const generateQRCode = async () => {
     try {
       if (!salon?.id) {
@@ -329,7 +357,8 @@ export default function Dashboard() {
         return
       }
 
-      const response = await fetch('/api/salon/settings', {
+      // Update session duration via salon settings API
+      const sessionResponse = await fetch('/api/salon/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -339,29 +368,71 @@ export default function Dashboard() {
         }),
       })
 
-      if (response.ok) {
-        const responseData = await response.json()
+      // Update max images per session via subscription API
+      const subscriptionResponse = await fetch('/api/salon/subscription', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          max_ai_uses: settingsForm.max_ai_uses
+        }),
+      })
+
+      if (sessionResponse.ok && subscriptionResponse.ok) {
         setShowSettingsForm(false)
         
-        // Update the salon state with the new settings
-        if (responseData.salon) {
-          setSalon(prev => prev ? {
-            ...prev,
-            session_duration: responseData.salon.session_duration,
-            max_ai_uses: responseData.salon.max_ai_uses
-          } : prev)
-        }
+        // Reload both salon and subscription data to get updated settings
+        loadDashboardData()
+        loadSubscriptionData()
         
         setShowSuccessModal(true)
         // Auto-hide modal after 3 seconds
         setTimeout(() => setShowSuccessModal(false), 3000)
       } else {
-        const errorData = await response.json()
-        alert(`Failed to update settings: ${errorData.error || 'Unknown error'}`)
+        let errorMessage = 'Failed to update settings'
+        if (!sessionResponse.ok) {
+          const sessionError = await sessionResponse.json()
+          errorMessage += ` (Session: ${sessionError.error || 'Unknown error'})`
+        }
+        if (!subscriptionResponse.ok) {
+          const subscriptionError = await subscriptionResponse.json()
+          errorMessage += ` (Subscription: ${subscriptionError.error || 'Unknown error'})`
+        }
+        alert(errorMessage)
       }
     } catch (error) {
       console.error('Settings update error:', error)
       alert('Failed to update settings. Please try again.')
+    }
+  }
+
+  const handlePurchaseOverage = async (images: number, price: number) => {
+    try {
+      const response = await fetch('/api/salon/subscription', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          package_type: 'overage',
+          images_count: images,
+          price: price
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        alert(`Successfully purchased ${images} additional images!`)
+        // Reload subscription data to show updated balance
+        loadSubscriptionData()
+      } else {
+        const errorData = await response.json()
+        alert(`Failed to purchase images: ${errorData.error || 'Unknown error'}`)
+      }
+    } catch (error) {
+      console.error('Purchase error:', error)
+      alert('Failed to process purchase. Please try again.')
     }
   }
 
@@ -513,12 +584,22 @@ export default function Dashboard() {
 
               <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-6">
                 <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
-                    <CheckCircle className="w-6 h-6 text-white" />
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                    (subscription?.images_remaining_this_cycle || 0) <= 20 
+                      ? 'bg-gradient-to-r from-yellow-500 to-orange-500' 
+                      : 'bg-gradient-to-r from-green-500 to-emerald-500'
+                  }`}>
+                    <Sparkles className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <p className="text-white/60 text-sm">Free Trial Left</p>
-                    <p className="text-white text-2xl font-bold">{salon?.free_trial_generations || 0}</p>
+                    <p className="text-white/60 text-sm">Images Remaining</p>
+                    <p className={`text-2xl font-bold ${
+                      (subscription?.images_remaining_this_cycle || 0) <= 20 
+                        ? 'text-yellow-300' 
+                        : 'text-white'
+                    }`}>
+                      {subscription?.images_remaining_this_cycle || 0}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -778,6 +859,153 @@ export default function Dashboard() {
         {/* Settings Tab */}
         {activeTab === 'settings' && (
           <div className="space-y-8">
+            {/* Subscription & Billing */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-8">
+              <h2 className="text-2xl font-bold text-white mb-6">Subscription & Billing</h2>
+              
+              {subscriptionLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
+                  <p className="text-white/60">Loading subscription data...</p>
+                </div>
+              ) : subscription ? (
+                <div className="space-y-6">
+                  {/* Current Plan */}
+                  <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-xl p-6 border border-purple-500/30">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                          <CreditCard className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-white font-semibold text-lg">{subscription.plan?.name || 'Standard Plan'}</h3>
+                          <p className="text-purple-200">${subscription.plan?.price_per_month || 49}/month</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                          subscription.status === 'active' 
+                            ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                            : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                        }`}>
+                          {subscription.status === 'active' ? 'Active' : 'Inactive'}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {/* Usage Progress */}
+                    <div className="space-y-4">
+                      <div>
+                        <div className="flex justify-between text-sm mb-2">
+                          <span className="text-white/80">Images Used This Month</span>
+                          <span className="text-white">
+                            {subscription.images_used_this_cycle} / {subscription.plan?.included_images || 200}
+                          </span>
+                        </div>
+                        <div className="w-full bg-white/10 rounded-full h-2">
+                          <div 
+                            className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-300"
+                            style={{ 
+                              width: `${Math.min((subscription.images_used_this_cycle / (subscription.plan?.included_images || 200)) * 100, 100)}%` 
+                            }}
+                          ></div>
+                        </div>
+                      </div>
+                      
+                      <div className="grid md:grid-cols-3 gap-4 text-center">
+                        <div className="bg-white/10 rounded-lg p-3">
+                          <p className="text-white/60 text-xs">Remaining</p>
+                          <p className="text-white text-lg font-bold">{subscription.images_remaining_this_cycle}</p>
+                        </div>
+                        <div className="bg-white/10 rounded-lg p-3">
+                          <p className="text-white/60 text-xs">Days Left</p>
+                          <p className="text-white text-lg font-bold">{subscription.days_remaining_in_cycle}</p>
+                        </div>
+                        <div className="bg-white/10 rounded-lg p-3">
+                          <p className="text-white/60 text-xs">Per Session</p>
+                          <p className="text-white text-lg font-bold">{subscription.max_ai_uses_per_session}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Low Balance Warning */}
+                  {subscription.images_remaining_this_cycle <= 20 && (
+                    <div className="bg-gradient-to-r from-yellow-600/20 to-orange-600/20 rounded-xl p-4 border border-yellow-500/30">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                          <Zap className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-yellow-200 font-medium">Running Low on Images</p>
+                          <p className="text-yellow-300/80 text-sm">
+                            Only {subscription.images_remaining_this_cycle} images left. Consider purchasing additional images.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Purchase Additional Images */}
+                  <div className="bg-white/10 rounded-xl p-6 border border-white/20">
+                    <h4 className="text-white font-semibold mb-4">Need More Images?</h4>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="bg-gradient-to-r from-blue-600/20 to-cyan-600/20 rounded-lg p-4 border border-blue-500/30">
+                        <div className="text-center">
+                          <p className="text-blue-200 font-medium">100 Additional Images</p>
+                          <p className="text-white text-2xl font-bold">$20</p>
+                          <p className="text-blue-300/80 text-sm">One-time purchase</p>
+                          <button 
+                            onClick={() => handlePurchaseOverage(100, 20)}
+                            className="mt-3 w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-2 rounded-lg font-medium hover:from-blue-700 hover:to-cyan-700 transition-all"
+                          >
+                            Purchase Now
+                          </button>
+                        </div>
+                      </div>
+                      <div className="bg-gradient-to-r from-green-600/20 to-emerald-600/20 rounded-lg p-4 border border-green-500/30">
+                        <div className="text-center">
+                          <p className="text-green-200 font-medium">250 Additional Images</p>
+                          <p className="text-white text-2xl font-bold">$45</p>
+                          <p className="text-green-300/80 text-sm">Best value - Save $5</p>
+                          <button 
+                            onClick={() => handlePurchaseOverage(250, 45)}
+                            className="mt-3 w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-2 rounded-lg font-medium hover:from-green-700 hover:to-emerald-700 transition-all"
+                          >
+                            Purchase Now
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Billing Cycle Info */}
+                  <div className="bg-white/10 rounded-xl p-4 border border-white/20">
+                    <h4 className="text-white font-medium mb-3">Billing Cycle</h4>
+                    <div className="grid md:grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p className="text-white/60">Current Cycle Start</p>
+                        <p className="text-white">{new Date(subscription.billing_cycle_start).toLocaleDateString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-white/60">Next Billing Date</p>
+                        <p className="text-white">{new Date(subscription.billing_cycle_end).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                    <p className="text-white/60 text-xs mt-3">
+                      Your plan renews automatically. Unused images do not carry over to the next cycle.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <CreditCard className="w-12 h-12 text-white/40 mx-auto mb-4" />
+                  <p className="text-white/60">No subscription data available</p>
+                </div>
+              )}
+            </div>
+
+            {/* Salon Settings */}
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-8">
               <h2 className="text-2xl font-bold text-white mb-6">Salon Settings</h2>
               
@@ -817,7 +1045,7 @@ export default function Dashboard() {
                     <p className="text-white/60 text-sm">Configure client session limits</p>
                     <div className="mt-2 text-sm text-white/80">
                       <p>Duration: <strong>{salon?.session_duration || 30} minutes</strong></p>
-                      <p>AI Uses: <strong>{salon?.max_ai_uses || 20} transformations</strong></p>
+                      <p>Images per Session: <strong>{subscription?.max_ai_uses_per_session || 5} images</strong></p>
                     </div>
                   </div>
                   <button
@@ -825,7 +1053,7 @@ export default function Dashboard() {
                       // Pre-populate form with current settings
                       setSettingsForm({
                         session_duration: salon?.session_duration || 30,
-                        max_ai_uses: salon?.max_ai_uses || 20
+                        max_ai_uses: subscription?.max_ai_uses_per_session || 5
                       })
                       setShowSettingsForm(true)
                     }}
@@ -944,28 +1172,29 @@ export default function Dashboard() {
 
               <div>
                 <label className="block text-sm font-medium text-white/90 mb-2">
-                  AI Transformations per Session *
+                  Images per Session *
                 </label>
                 <input
                   type="number"
                   min="1"
-                  max="50"
+                  max="20"
                   value={settingsForm.max_ai_uses}
                   onChange={(e) => setSettingsForm({...settingsForm, max_ai_uses: parseInt(e.target.value)})}
                   required
                   className="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/50 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                  placeholder="20"
+                  placeholder="5"
                 />
-                <p className="text-white/60 text-xs mt-1">Maximum AI transformations per client (1-50 uses)</p>
+                <p className="text-white/60 text-xs mt-1">Maximum images each client can generate per session (1-20).</p>
               </div>
 
               <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">
                 <h3 className="text-white font-medium mb-2">💡 Recommendations:</h3>
                 <ul className="text-white/70 text-sm space-y-1">
                   <li>• <strong>Session Duration:</strong> 30-45 minutes for busy salons</li>
-                  <li>• <strong>AI Uses:</strong> 15-25 transformations per client</li>
-                  <li>• Higher limits = better client experience</li>
-                  <li>• Lower limits = more efficient turnover</li>
+                  <li>• <strong>Images per Session:</strong> 3-10 images per client</li>
+                  <li>• <strong>High Volume:</strong> Set to 1-2 images for quick turnover</li>
+                  <li>• <strong>Premium Experience:</strong> Set to 8-15 images for exploration</li>
+                  <li>• <strong>Conservative:</strong> Start with 5 images and adjust based on usage</li>
                 </ul>
               </div>
 
