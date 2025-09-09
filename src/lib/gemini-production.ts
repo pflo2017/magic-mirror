@@ -189,7 +189,15 @@ SPECIFIC GUIDANCE:
 
 IMPORTANT: For layered cuts (butterfly, shag, wolf), make the layers VERY OBVIOUS and dramatic - the change should be clearly visible!
 
-Generate the transformed image now with clear, visible changes to match the instruction.`
+IMAGE FORMAT REQUIREMENTS:
+- MAINTAIN THE EXACT SAME DIMENSIONS as the original image
+- PRESERVE THE SAME ASPECT RATIO as the input image
+- Keep the same image composition, framing, and crop
+- Generate the output in the IDENTICAL FORMAT as the original
+- Do not resize, crop, or change the image dimensions
+- The output image must have the same width and height as the input
+
+Generate the transformed image now with clear, visible changes to match the instruction, while preserving the exact same image format and dimensions as the original.`
 }
 
 /**

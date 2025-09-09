@@ -24,7 +24,8 @@ const supabase = createClient(
 export async function transformHairWithReference(
   originalImageBase64: string,
   stylePrompt: string | any,
-  sessionId: string
+  sessionId: string,
+  category?: string
 ): Promise<{ success: boolean; imageUrl?: string; prompt?: string; error?: string; usedReference?: boolean }> {
   
   const apiKey = process.env.GEMINI_API_KEY
@@ -32,8 +33,11 @@ export async function transformHairWithReference(
     throw new Error('GEMINI_API_KEY environment variable is required')
   }
 
+  const attemptId = Math.random().toString(36).substring(7)
+  console.log(`🎨 [${attemptId}] Starting Gemini transformation WITH reference image...`)
+  console.log(`🎨 [${attemptId}] Session: ${sessionId}, Category: ${category}`)
+
   try {
-    console.log('🎨 Starting Gemini transformation WITH reference image...')
     
     // Parse style information
     const { instruction, styleName } = parseStylePrompt(stylePrompt)
@@ -41,10 +45,15 @@ export async function transformHairWithReference(
     console.log(`🖼️ Loading reference image for: ${styleName}`)
     
     // Get reference image for this style
-    console.log(`🎯 Attempting to load reference for style: "${styleName}"`)
-    const referenceImageBase64 = await getReferenceImage(styleName)
+    console.log(`🎯 [${attemptId}] Attempting to load reference for style: "${styleName}"`)
+    console.log(`📂 [${attemptId}] Category: ${category}, Gender: ${category === 'women_hairstyles' ? 'women' : category === 'men_hairstyles' ? 'men' : 'undefined'}`)
+    
+    // Determine gender from category
+    const gender = category === 'women_hairstyles' ? 'women' : category === 'men_hairstyles' ? 'men' : undefined
+    const referenceImageBase64 = await getReferenceImage(styleName, gender, attemptId)
     if (!referenceImageBase64) {
-      console.log('⚠️ No reference image found for style:', styleName)
+      console.log(`❌ [${attemptId}] REFERENCE IMAGE LOADING FAILED for style:`, styleName)
+      console.log(`🔍 [${attemptId}] This might be why first attempt fails but second works`)
       return {
         success: false,
         error: 'No reference image found',
@@ -85,18 +94,33 @@ export async function transformHairWithReference(
       }
     ]
 
-    console.log('📤 Sending request with user photo + reference image...')
-    console.log(`📊 Request details:`)
+    console.log(`📤 [${attemptId}] Sending request with user photo + reference image...`)
+    console.log(`📊 [${attemptId}] Request details:`)
     console.log(`   - User image size: ${originalImageBase64.length} chars`)
     console.log(`   - Reference image size: ${referenceImageBase64.length} chars`)
     console.log(`   - Prompt length: ${enhancedPrompt.length} chars`)
     
     // Generate content
+    const startTime = Date.now()
     const response = await model.generateContent({
       contents: contents
     })
+    const endTime = Date.now()
     
-    console.log('📥 Received response from Gemini')
+    console.log(`📥 [${attemptId}] Received response from Gemini (${endTime - startTime}ms)`)
+
+    // Debug: Log response structure for Buzz Cut issues
+    if (styleName.toLowerCase().includes('buzz')) {
+      console.log(`🔍 [${attemptId}] BUZZ CUT DEBUG - Response structure:`, {
+        hasCandidates: !!response.response.candidates,
+        candidatesLength: response.response.candidates?.length,
+        firstCandidate: response.response.candidates?.[0] ? {
+          hasContent: !!response.response.candidates[0].content,
+          partsLength: response.response.candidates[0].content?.parts?.length,
+          finishReason: response.response.candidates[0].finishReason
+        } : null
+      })
+    }
 
     // Process response
     const candidates = response.response.candidates
@@ -130,6 +154,27 @@ export async function transformHairWithReference(
 
     console.log('✅ Gemini transformation successful with reference!')
     
+    // Debug: Check if this is actually a different image for Buzz Cut
+    if (styleName.toLowerCase().includes('buzz')) {
+      const imageDataLength = imagePart.inlineData.data.length
+      const imageDataStart = imagePart.inlineData.data.substring(0, 100)
+      const originalImageStart = originalImageBase64.substring(0, 100)
+      
+      console.log(`🔍 [${attemptId}] BUZZ CUT DEBUG - Generated image data:`, {
+        dataLength: imageDataLength,
+        dataStart: imageDataStart,
+        mimeType: imagePart.inlineData.mimeType
+      })
+      
+      console.log(`🔍 [${attemptId}] BUZZ CUT DEBUG - Original vs Generated comparison:`, {
+        originalStart: originalImageStart,
+        generatedStart: imageDataStart,
+        areSame: originalImageStart === imageDataStart,
+        originalLength: originalImageBase64.length,
+        generatedLength: imageDataLength
+      })
+    }
+    
     // Store the generated image
     const imageUrl = await storeGeneratedImage(imagePart.inlineData.data, sessionId)
     
@@ -141,16 +186,17 @@ export async function transformHairWithReference(
     }
 
   } catch (error: any) {
-    console.error('❌ Gemini transformation failed:', error)
-    console.error('❌ Error details:', {
+    console.error(`❌ [${attemptId}] Gemini transformation failed:`, error)
+    console.error(`❌ [${attemptId}] Error details:`, {
       message: error.message,
       stack: error.stack,
       name: error.name
     })
+    console.error(`🔍 [${attemptId}] This error on first attempt could explain the pattern`)
     
     // Check if it's a model availability issue
     if (error.message?.includes('not found') || error.message?.includes('not available') || error.message?.includes('model')) {
-      console.log('💡 Image generation model not available, falling back to standard transformation...')
+      console.log(`💡 [${attemptId}] Image generation model not available, falling back to standard transformation...`)
       const { transformHairWithGemini } = await import('./gemini-production')
       return await transformHairWithGemini(originalImageBase64, stylePrompt, sessionId)
     }
@@ -197,7 +243,7 @@ function parseStylePrompt(stylePrompt: string | any): { instruction: string; sty
 /**
  * Get reference image for a specific hairstyle
  */
-async function getReferenceImage(styleName: string): Promise<string | null> {
+async function getReferenceImage(styleName: string, gender?: string, attemptId?: string): Promise<string | null> {
   try {
     // Handle different naming conventions
     let filename = styleName.toLowerCase().replace(/[^a-z0-9]/g, '-') + '.png'
@@ -217,9 +263,39 @@ async function getReferenceImage(styleName: string): Promise<string | null> {
       filename = styleNameMapping[baseFilename]
     }
     
-    const imagePath = path.join(process.cwd(), 'public', 'hairstyle-previews', filename)
+    // Determine gender folder from category or gender parameter
+    let genderFolder = ''
+    if (gender) {
+      genderFolder = gender === 'women' ? 'women' : 'men'
+    }
     
-    console.log(`🔍 Looking for reference image: ${imagePath}`)
+    // Try gender-specific folder first if gender is provided
+    let imagePath = ''
+    if (genderFolder) {
+      imagePath = path.join(process.cwd(), 'public', 'hairstyle-previews', genderFolder, filename)
+      console.log(`🔍 [${attemptId || 'unknown'}] Looking for gender-specific reference image: ${imagePath}`)
+      
+      try {
+        console.log(`🔍 [${attemptId || 'unknown'}] Checking if file exists: ${imagePath}`)
+        if (fs.existsSync(imagePath)) {
+          console.log(`✅ [${attemptId || 'unknown'}] File exists, reading...`)
+          const imageBuffer = fs.readFileSync(imagePath)
+          const base64 = imageBuffer.toString('base64')
+          console.log(`✅ [${attemptId || 'unknown'}] Loaded gender-specific reference image: ${genderFolder}/${filename} (${imageBuffer.length} bytes)`)
+          return base64
+        } else {
+          console.log(`❌ [${attemptId || 'unknown'}] Gender-specific reference image not found: ${imagePath}`)
+          console.log(`🔍 [${attemptId || 'unknown'}] File system check failed - this could cause first-attempt failures`)
+        }
+      } catch (error) {
+        console.error(`❌ [${attemptId || 'unknown'}] Error loading gender-specific reference image:`, error)
+        console.error(`🔍 [${attemptId || 'unknown'}] This error could explain why first attempt fails but second works`)
+      }
+    }
+    
+    // Fall back to main folder
+    imagePath = path.join(process.cwd(), 'public', 'hairstyle-previews', filename)
+    console.log(`🔍 Looking for reference image in main folder: ${imagePath}`)
     console.log(`🎯 Style: "${styleName}" → File: "${filename}"`)
     
     // Check if file exists
@@ -258,29 +334,50 @@ async function getReferenceImage(styleName: string): Promise<string | null> {
  * Create enhanced prompt that uses reference image
  */
 function createReferenceBasedPrompt(instruction: string, styleName: string): string {
-  return `PROFESSIONAL HAIR STYLING SERVICE - You are a professional hair stylist AI assistant helping with virtual hair makeovers. You have been provided with TWO images:
-1. The ORIGINAL photo of the person (first image)
-2. A REFERENCE image showing the desired HAIRSTYLE (second image)
+  return `PROFESSIONAL HAIR STYLING TRANSFORMATION - You are performing a complete hair makeover. You have TWO images:
+1. ORIGINAL PHOTO: Person who needs hair transformation (first image)
+2. REFERENCE HAIRSTYLE: Target hairstyle to achieve (second image)
 
-HAIR STYLING TASK:
-Transform ONLY the hair in the ORIGINAL photo to match the hairstyle shown in the REFERENCE image. This is a professional hair styling service for salon clients.
+CRITICAL TRANSFORMATION REQUIREMENTS:
+- COMPLETELY CHANGE THE HAIR to match the reference image exactly
+- The hair transformation MUST be dramatic and clearly visible
+- DO NOT make subtle changes - make BOLD, OBVIOUS hair transformations
+- The result should look like a completely different hairstyle
 
-SPECIFIC HAIR STYLING INSTRUCTION: ${instruction}
+HAIR TRANSFORMATION INSTRUCTION: ${instruction}
 
-PROFESSIONAL HAIR STYLING RULES:
-1. STUDY THE REFERENCE HAIRSTYLE IMAGE CAREFULLY - This shows exactly how the hair should look
-2. APPLY THE REFERENCE HAIRSTYLE to the original photo - match the hair layers, texture, length, and overall hair shape
-3. PRESERVE EVERYTHING ELSE - Keep the person's face, skin, eyes, expression, background, and clothing exactly identical to the original
-4. ONLY MODIFY THE HAIR STYLING - Do not change any other aspect of the original image
-5. PROFESSIONAL RESULT - The result should clearly show the hairstyle from the reference image applied to the original person's hair
+MANDATORY TRANSFORMATION STEPS:
+1. ANALYZE the reference hairstyle image - note the exact hair length, layers, texture, and shape
+2. COMPLETELY TRANSFORM the original person's hair to match the reference exactly
+3. CHANGE hair length if needed (shorter or longer to match reference)
+4. CHANGE hair layers and texture to match reference
+5. CHANGE hair shape and volume to match reference
+6. PRESERVE the person's face, skin, expression, and background exactly
+7. MAKE THE HAIR CHANGE DRAMATIC AND OBVIOUS
 
-HAIR STYLING REFERENCE GUIDANCE:
-- Use the reference image as your PRIMARY guide for the hairstyle structure and appearance
-- The text instruction provides additional hair styling context, but the reference image shows the exact hair look to achieve
-- Pay attention to hair layer placement, hair texture, hair volume, and overall hair shape in the reference
-- Make the hair transformation dramatic and clearly visible - it should obviously match the reference hairstyle
+TRANSFORMATION INTENSITY:
+- This is a COMPLETE HAIR MAKEOVER, not a subtle adjustment
+- The before and after should look dramatically different
+- If the reference shows short hair, make the hair SHORT
+- If the reference shows layers, add CLEAR LAYERS
+- If the reference shows bangs, add VISIBLE BANGS
+- Make changes that are immediately noticeable
 
-Generate the transformed image now, applying the reference hairstyle to the original photo with clear, visible changes.`
+IMAGE FORMAT REQUIREMENTS:
+- MAINTAIN THE EXACT SAME DIMENSIONS as the original image
+- PRESERVE THE SAME ASPECT RATIO as the input image
+- Keep the same image composition, framing, and crop
+- Generate the output in the IDENTICAL FORMAT as the original
+- Do not resize, crop, or change the image dimensions
+- The output image must have the same width and height as the input
+
+QUALITY REQUIREMENTS:
+- The transformation must be professional salon-quality
+- Hair should look natural and realistic on the person
+- Maintain proper lighting and image quality
+- Ensure the new hairstyle suits the person's face shape
+
+Generate a dramatically transformed image where the hair clearly matches the reference hairstyle with obvious, visible changes, while preserving the exact same image format and dimensions as the original.`
 }
 
 /**

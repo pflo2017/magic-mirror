@@ -137,6 +137,8 @@ export default function ClientTryOnInterface() {
       } else if (response.status === 401) {
         setSessionError('Session expired! Please ask your stylist for a new QR code.')
         setSessionToken(null)
+        // Clear expired session from localStorage
+        localStorage.removeItem(`session_${salonId}`)
       }
     } catch (error) {
       console.error('Session validation error:', error)
@@ -145,6 +147,47 @@ export default function ClientTryOnInterface() {
 
   const initializeSession = async () => {
     try {
+      // First, check if there's an existing session in localStorage
+      const storedSessionData = localStorage.getItem(`session_${salonId}`)
+      
+      if (storedSessionData) {
+        try {
+          const sessionData = JSON.parse(storedSessionData)
+          console.log('🔍 Found existing session, validating...', sessionData.session_token.substring(0, 8) + '...')
+          
+          // Validate the existing session
+          const validateResponse = await fetch('/api/session/validate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ session_token: sessionData.session_token })
+          })
+          
+          if (validateResponse.ok) {
+            const validationData = await validateResponse.json()
+            console.log('✅ Existing session is valid, resuming...', {
+              credits_remaining: validationData.session.ai_uses_remaining,
+              time_remaining: validationData.session.time_remaining
+            })
+            
+            // Resume existing session
+            setSessionToken(sessionData.session_token)
+            setCreditsLeft(validationData.session.ai_uses_remaining)
+            setSessionTime(validationData.session.time_remaining)
+            setIsLoading(false)
+            return
+          } else {
+            console.log('❌ Existing session invalid, creating new one...')
+            // Clear invalid session from localStorage
+            localStorage.removeItem(`session_${salonId}`)
+          }
+        } catch (parseError) {
+          console.log('⚠️ Invalid session data in localStorage, clearing...')
+          localStorage.removeItem(`session_${salonId}`)
+        }
+      }
+      
+      // Create new session if no valid existing session
+      console.log('🆕 Creating new session...')
       const response = await fetch('/api/session/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -153,7 +196,21 @@ export default function ClientTryOnInterface() {
 
       if (response.ok) {
         const data = await response.json()
-        console.log('🔄 Session initialized:', data)
+        console.log('🔄 New session created:', {
+          session_id: data.session_token.substring(0, 8) + '...',
+          max_ai_uses: data.max_ai_uses,
+          session_duration: data.session_duration
+        })
+        
+        // Store session data in localStorage for persistence
+        const sessionData = {
+          session_token: data.session_token,
+          salon_id: salonId,
+          created_at: new Date().toISOString(),
+          expires_at: data.expires_at
+        }
+        localStorage.setItem(`session_${salonId}`, JSON.stringify(sessionData))
+        
         setSessionToken(data.session_token)
         setCreditsLeft(data.max_ai_uses)
         setSessionTime(data.session_duration * 60 || 15 * 60)
@@ -815,17 +872,22 @@ export default function ClientTryOnInterface() {
                           className="w-full h-full object-cover rounded-xl"
                         />
                       ) : (
-                        // Try to load reference image from public folder
+                        // Try to load reference image from gender-specific folder first
                         <img 
-                          src={`/hairstyle-previews/${style.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}.png`}
+                          src={`/hairstyle-previews/${style.category === 'women_hairstyles' ? 'women' : style.category === 'men_hairstyles' ? 'men' : ''}/${style.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}.png?t=${Date.now()}`}
                           alt={style.name}
                           className="w-full h-full object-cover rounded-xl"
                           onError={(e) => {
-                            // If reference image fails to load, show sparkle icon
+                            // If gender-specific image fails, show sparkle icon
                             const target = e.target as HTMLImageElement;
+                            console.error(`❌ Failed to load image for ${style.name}:`, target.src);
                             target.style.display = 'none';
                             const sparkleIcon = target.nextElementSibling as HTMLElement;
                             if (sparkleIcon) sparkleIcon.style.display = 'block';
+                          }}
+                          onLoad={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            console.log(`✅ Successfully loaded image for ${style.name}:`, target.src);
                           }}
                         />
                       )}
@@ -881,7 +943,7 @@ export default function ClientTryOnInterface() {
                 {/* Original */}
                 <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
                   <div 
-                    className="rounded-xl overflow-hidden mb-3 cursor-pointer relative group"
+                    className="rounded-xl overflow-hidden mb-3 cursor-pointer relative group bg-black/10"
                     onClick={() => selectedImage && openImageModal(selectedImage, 'Original')}
                   >
                     {selectedImage && (
@@ -889,7 +951,7 @@ export default function ClientTryOnInterface() {
                         <img 
                           src={selectedImage} 
                           alt="Original"
-                          className="w-full h-auto object-contain transition-transform group-hover:scale-105"
+                          className="w-full h-64 md:h-80 object-contain transition-transform group-hover:scale-105"
                         />
                         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                           <Maximize2 className="w-6 h-6 text-white" />
@@ -903,7 +965,7 @@ export default function ClientTryOnInterface() {
                 {/* New Look */}
                 <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
                   <div 
-                    className="rounded-xl overflow-hidden mb-3 cursor-pointer relative group"
+                    className="rounded-xl overflow-hidden mb-3 cursor-pointer relative group bg-black/10"
                     onClick={() => resultImage && openImageModal(resultImage, 'New Look')}
                   >
                     {resultImage && (
@@ -911,7 +973,7 @@ export default function ClientTryOnInterface() {
                         <img 
                           src={resultImage} 
                           alt="New Look"
-                          className="w-full h-auto object-contain transition-transform group-hover:scale-105"
+                          className="w-full h-64 md:h-80 object-contain transition-transform group-hover:scale-105"
                         />
                         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                           <Maximize2 className="w-6 h-6 text-white" />

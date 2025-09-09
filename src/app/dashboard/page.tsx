@@ -41,6 +41,27 @@ interface SalonAnalytics {
   category_usage: Record<string, number>
 }
 
+interface SessionData {
+  id: string
+  start_time: string
+  end_time: string | null
+  duration_minutes: number
+  is_active: boolean
+  ai_uses_count: number
+  max_ai_uses: number
+  generations: Array<{
+    id: string
+    created_at: string
+    processing_time_ms: number
+  }>
+  styles_used: Array<{
+    style_name: string
+    category: string
+    created_at: string
+    processing_time_ms: number
+  }>
+}
+
 interface Salon {
   id: string
   name: string
@@ -62,7 +83,7 @@ export default function Dashboard() {
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null)
   const [tryOnUrl, setTryOnUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'overview' | 'analytics' | 'settings'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'analytics' | 'sessions' | 'settings'>('overview')
   const [showProfileForm, setShowProfileForm] = useState(false)
   const [profileForm, setProfileForm] = useState({
     name: '',
@@ -75,10 +96,19 @@ export default function Dashboard() {
     max_ai_uses: 20
   })
   const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [sessions, setSessions] = useState<SessionData[]>([])
+  const [sessionsSummary, setSessionsSummary] = useState<any>(null)
+  const [sessionsLoading, setSessionsLoading] = useState(false)
 
   useEffect(() => {
     loadDashboardData()
   }, [])
+
+  useEffect(() => {
+    if (activeTab === 'sessions' || activeTab === 'overview') {
+      loadSessionsData()
+    }
+  }, [activeTab])
 
   const loadDashboardData = async () => {
     try {
@@ -164,6 +194,36 @@ export default function Dashboard() {
       window.location.href = '/salon/login'
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadSessionsData = async () => {
+    setSessionsLoading(true)
+    try {
+      console.log('🔍 Loading sessions data...')
+      const response = await fetch('/api/salon/sessions', {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      
+      console.log('📡 Sessions API response status:', response.status)
+      
+      if (response.ok) {
+        const data = await response.json()
+        console.log('✅ Sessions data loaded:', data)
+        setSessions(data.sessions)
+        setSessionsSummary(data.summary)
+      } else {
+        const errorData = await response.json().catch(() => ({}))
+        console.error('❌ Failed to load sessions data:', errorData)
+        console.error('❌ Response status:', response.status, response.statusText)
+      }
+    } catch (error) {
+      console.error('❌ Sessions data error:', error)
+    } finally {
+      setSessionsLoading(false)
     }
   }
 
@@ -399,6 +459,7 @@ export default function Dashboard() {
             {[
               { id: 'overview', label: 'Overview', icon: BarChart3 },
               { id: 'analytics', label: 'Analytics', icon: TrendingUp },
+              { id: 'sessions', label: 'Sessions', icon: Clock },
               { id: 'settings', label: 'Settings', icon: Settings }
             ].map((tab) => (
               <button
@@ -433,7 +494,7 @@ export default function Dashboard() {
                   </div>
                   <div>
                     <p className="text-white/60 text-sm">Total Sessions</p>
-                    <p className="text-white text-2xl font-bold">{analytics?.total_sessions || 0}</p>
+                    <p className="text-white text-2xl font-bold">{sessionsSummary?.total_sessions || 0}</p>
                   </div>
                 </div>
               </div>
@@ -444,8 +505,8 @@ export default function Dashboard() {
                     <Zap className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <p className="text-white/60 text-sm">AI Generations</p>
-                    <p className="text-white text-2xl font-bold">{salon?.total_ai_generations_used || 0}</p>
+                    <p className="text-white/60 text-sm">Images Generated</p>
+                    <p className="text-white text-2xl font-bold">{sessionsSummary?.total_generations || 0}</p>
                   </div>
                 </div>
               </div>
@@ -578,6 +639,138 @@ export default function Dashboard() {
               <p className="text-white/70">
                 Detailed analytics and insights will be available in the next update.
               </p>
+            </div>
+          </div>
+        )}
+
+        {/* Sessions Tab */}
+        {activeTab === 'sessions' && (
+          <div className="space-y-8">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-white">Session Management</h2>
+              <button
+                onClick={loadSessionsData}
+                className="bg-white/10 backdrop-blur-sm border border-white/20 text-white px-4 py-2 rounded-lg hover:bg-white/20 transition-all flex items-center space-x-2"
+              >
+                <Clock className="w-4 h-4" />
+                <span>Refresh</span>
+              </button>
+            </div>
+
+            {/* Sessions Summary */}
+            {sessionsSummary && (
+              <div className="grid md:grid-cols-4 gap-6">
+                <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+                      <Users className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-white/60 text-sm">Total Sessions</p>
+                      <p className="text-white text-2xl font-bold">{sessionsSummary.total_sessions}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                      <Clock className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-white/60 text-sm">Active Sessions</p>
+                      <p className="text-white text-2xl font-bold">{sessionsSummary.active_sessions}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                      <Zap className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-white/60 text-sm">Images Generated</p>
+                      <p className="text-white text-2xl font-bold">{sessionsSummary.total_generations}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
+                      <BarChart3 className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-white/60 text-sm">Avg Duration</p>
+                      <p className="text-white text-2xl font-bold">{sessionsSummary.avg_session_duration_minutes}m</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Sessions Table */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 overflow-hidden">
+              <div className="p-6 border-b border-white/10">
+                <h3 className="text-xl font-semibold text-white">Recent Sessions</h3>
+                <p className="text-white/60 text-sm mt-1">Track client sessions, usage, and activity</p>
+              </div>
+
+              {sessionsLoading ? (
+                <div className="p-8 text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
+                  <p className="text-white/60">Loading sessions...</p>
+                </div>
+              ) : sessions.length === 0 ? (
+                <div className="p-8 text-center">
+                  <Clock className="w-12 h-12 text-white/40 mx-auto mb-4" />
+                  <p className="text-white/60">No sessions yet</p>
+                  <p className="text-white/40 text-sm">Sessions will appear here when clients start using your QR code</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-white/5">
+                      <tr>
+                        <th className="text-left p-4 text-white/80 font-medium">Session ID</th>
+                        <th className="text-left p-4 text-white/80 font-medium">Start Time</th>
+                        <th className="text-left p-4 text-white/80 font-medium">Duration</th>
+                        <th className="text-left p-4 text-white/80 font-medium">Images Generated</th>
+                        <th className="text-left p-4 text-white/80 font-medium">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sessions.map((session, index) => (
+                        <tr key={session.id} className={index % 2 === 0 ? 'bg-white/5' : ''}>
+                          <td className="p-4 text-white/90 font-mono text-sm">
+                            {session.id.substring(0, 8)}...
+                          </td>
+                          <td className="p-4 text-white/80">
+                            {new Date(session.start_time).toLocaleString()}
+                          </td>
+                          <td className="p-4 text-white/80">
+                            {session.duration_minutes}m
+                          </td>
+                          <td className="p-4 text-white/80">
+                            <span className="text-white text-lg font-semibold">{session.ai_uses_count}</span>
+                            <span className="text-white/50 text-sm ml-1">images</span>
+                          </td>
+                          <td className="p-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              session.is_active 
+                                ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                                : 'bg-gray-500/20 text-gray-400 border border-gray-500/30'
+                            }`}>
+                              {session.is_active ? 'Active' : 'Ended'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
         )}

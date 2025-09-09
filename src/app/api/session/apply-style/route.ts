@@ -124,7 +124,8 @@ export async function POST(request: NextRequest) {
         let aiResult = await transformHairWithReference(
           base64Data,
           { ...style.prompt, name: style.name },
-          session_token
+          session_token,
+          style.category
         )
         
         console.log('📊 Reference transformation result:', { success: aiResult.success, hasImageUrl: !!aiResult.imageUrl, error: aiResult.error, usedReference: aiResult.usedReference })
@@ -180,17 +181,22 @@ export async function POST(request: NextRequest) {
       .eq('id', session_token)
 
     // 6. Store the generation record
-    await supabaseAdmin
+    const insertResult = await supabaseAdmin
       .from('ai_generations')
       .insert({
-        session_id: session.id,
+        session_id: session_token, // Use session_token directly since it's the session ID
         style_id: style_id,
         original_image_url: originalFileName,
         generated_image_url: generatedImageUrl,
         processing_time_ms: process.env.GEMINI_API_KEY ? 15000 : 2000, // Real AI takes longer
-        prompt_used: style.prompt,
-        was_cached: false
+        prompt_used: style.prompt
       })
+    
+    if (insertResult.error) {
+      console.error('❌ Failed to insert ai_generations record:', insertResult.error)
+    } else {
+      console.log('✅ Successfully inserted ai_generations record')
+    }
 
     // 7. Return result with detailed AI status
     return NextResponse.json({
