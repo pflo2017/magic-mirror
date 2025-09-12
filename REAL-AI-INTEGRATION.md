@@ -138,3 +138,4 @@ The Magic Mirror is **production-ready** except for the final image transformati
 
 Choose your preferred hair transformation API and integrate it in the `simulateHairTransformation` function - everything else is ready to go! 🚀
 
+

@@ -26,3 +26,4 @@ WHERE (
 
 -- Verify the view was created successfully
 SELECT * FROM public.salon_locations LIMIT 5;
+

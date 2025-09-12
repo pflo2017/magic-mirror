@@ -33,3 +33,4 @@ SELECT
 FROM salons s
 LEFT JOIN subscription_plans sp ON s.subscription_plan_id = sp.id
 LIMIT 3;
+

@@ -38,3 +38,4 @@ export async function GET() {
 // const { salons } = await response.json()
 // // Use salons array to populate map markers
 
+

@@ -1,5 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import QRCode from 'qrcode'
+import { networkInterfaces } from 'os'
+
+// Function to dynamically get the current network IP
+function getCurrentNetworkIP(): string {
+  const nets = networkInterfaces()
+  
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]!) {
+      // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
+      if (net.family === 'IPv4' && !net.internal) {
+        return net.address
+      }
+    }
+  }
+  
+  return 'localhost' // fallback
+}
 
 // Function to get the base URL from request headers
 function getBaseUrl(request: NextRequest): string {
@@ -8,15 +25,18 @@ function getBaseUrl(request: NextRequest): string {
   const protocol = request.headers.get('x-forwarded-proto') || 'http'
   
   if (host) {
-    // If host is localhost, replace with network IP for mobile access
+    // If host is localhost, replace with current network IP for mobile access
     if (host.includes('localhost') || host.includes('127.0.0.1')) {
-      return `${protocol}://192.168.1.190:3000`
+      const networkIP = getCurrentNetworkIP()
+      const port = host.split(':')[1] || '3000'
+      return `${protocol}://${networkIP}:${port}`
     }
     return `${protocol}://${host}`
   }
   
-  // Fallback to environment variable or default network IP
-  return process.env.NEXT_PUBLIC_APP_URL || 'http://192.168.1.190:3000'
+  // Fallback: use current network IP with default port
+  const networkIP = getCurrentNetworkIP()
+  return process.env.NEXT_PUBLIC_APP_URL || `http://${networkIP}:3000`
 }
 
 export async function POST(request: NextRequest) {

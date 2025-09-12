@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient, analyticsOperations, sessionOperations } from '@/lib/supabase'
+import { createServerSupabaseClient, analyticsOperations, sessionOperations } from '@/lib/supabase-server'
 import { cacheOperations } from '@/lib/redis'
 
 export async function GET(request: NextRequest) {

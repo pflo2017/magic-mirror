@@ -1,5 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase-server'
+import { createClient } from '@supabase/supabase-js'
+import { Database } from '@/types/database'
+
+// Type aliases for better readability
+type ClientSession = Database['public']['Tables']['client_sessions']['Row']
+type ClientSessionUpdate = Database['public']['Tables']['client_sessions']['Update']
+type Salon = Database['public']['Tables']['salons']['Row']
+type SalonUpdate = Database['public']['Tables']['salons']['Update']
+type Style = Database['public']['Tables']['styles']['Row']
+type AIGenerationInsert = Database['public']['Tables']['ai_generations']['Insert']
+
+// Create a properly typed Supabase client
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+
+const supabase = createClient<Database>(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+})
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,12 +33,12 @@ export async function POST(request: NextRequest) {
     }
 
     // 1. Validate session token
-    const { data: session, error: sessionError } = await supabaseAdmin
+    const { data: session, error: sessionError } = await supabase
       .from('client_sessions')
       .select('*')
       .eq('id', session_token)
       .eq('is_active', true)
-      .single()
+      .single() as { data: ClientSession | null, error: any }
 
     if (sessionError || !session) {
       return NextResponse.json(
@@ -32,7 +52,7 @@ export async function POST(request: NextRequest) {
     const expiresAt = new Date(session.expires_at)
     
     if (now > expiresAt) {
-      await supabaseAdmin
+      await (supabase as any)
         .from('client_sessions')
         .update({ is_active: false })
         .eq('id', session_token)
@@ -52,11 +72,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Check salon's monthly image limit
-    const { data: salon, error: salonError } = await supabaseAdmin
+    const { data: salon, error: salonError } = await supabase
       .from('salons')
-      .select('images_remaining_this_cycle, total_images_available, subscription_status')
+      .select('images_remaining_this_cycle, total_images_available, subscription_status, images_used_this_cycle')
       .eq('id', session.salon_id)
-      .single()
+      .single() as { data: Partial<Salon> | null, error: any }
 
     if (salonError || !salon) {
       return NextResponse.json(
@@ -66,7 +86,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if salon has images remaining
-    if (salon.images_remaining_this_cycle <= 0) {
+    if ((salon.images_remaining_this_cycle || 0) <= 0) {
       return NextResponse.json(
         { 
           error: 'Monthly image limit reached', 
@@ -78,12 +98,11 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Get style details from database
-    const { data: style, error: styleError } = await supabaseAdmin
+    const { data: style, error: styleError } = await supabase
       .from('styles')
       .select('name, prompt, category')
       .eq('id', style_id)
-      .eq('is_active', true)
-      .single()
+      .single() as { data: Partial<Style> | null, error: any }
 
     if (styleError || !style) {
       return NextResponse.json(
@@ -103,7 +122,7 @@ export async function POST(request: NextRequest) {
     const imageBuffer = Buffer.from(image_url.split(',')[1], 'base64')
     const originalFileName = `originals/${session_token}-${Date.now()}.jpg`
     
-    const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
       .from('hair-tryon-images')
       .upload(originalFileName, imageBuffer, {
         contentType: 'image/jpeg',
@@ -119,7 +138,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get public URL for the uploaded image
-    const { data: urlData } = supabaseAdmin.storage
+    const { data: urlData } = supabase.storage
       .from('hair-tryon-images')
       .getPublicUrl(originalFileName)
 
@@ -149,9 +168,9 @@ export async function POST(request: NextRequest) {
         
         let aiResult = await transformHairWithReference(
           base64Data,
-          { ...style.prompt, name: style.name },
+          { ...(style.prompt as any), name: style.name },
           session_token,
-          style.category
+          style.category as any
         )
         
         console.log('📊 Reference transformation result:', { success: aiResult.success, hasImageUrl: !!aiResult.imageUrl, error: aiResult.error, usedReference: aiResult.usedReference })
@@ -164,7 +183,7 @@ export async function POST(request: NextRequest) {
           
           aiResult = await transformHairWithGemini(
             base64Data,
-            style.prompt,
+            style.prompt as any,
             session_token
           )
           usesReference = false
@@ -174,7 +193,7 @@ export async function POST(request: NextRequest) {
 
         if (aiResult.success && aiResult.imageUrl) {
           generatedImageUrl = aiResult.imageUrl
-          usedAI = aiResult.usedAI || true // Reference system always uses AI
+          usedAI = (aiResult as any).usedAI || true // Reference system always uses AI
           aiError = aiResult.error
           aiPromptUsed = aiResult.prompt
           console.log(`✅ Hair transformation completed! AI: ${usedAI}, Reference: ${usesReference}`)
@@ -199,7 +218,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 5. Update session usage count and salon image count
-    await supabaseAdmin
+    await (supabase as any)
       .from('client_sessions')
       .update({ 
         ai_uses_count: session.ai_uses_count + 1
@@ -207,24 +226,24 @@ export async function POST(request: NextRequest) {
       .eq('id', session_token)
 
     // Update salon's image usage (decrement remaining images)
-    await supabaseAdmin
+    await (supabase as any)
       .from('salons')
       .update({ 
-        images_used_this_cycle: salon.images_used_this_cycle + 1,
-        images_remaining_this_cycle: salon.images_remaining_this_cycle - 1
+        images_used_this_cycle: (salon.images_used_this_cycle || 0) + 1,
+        images_remaining_this_cycle: (salon.images_remaining_this_cycle || 0) - 1
       })
       .eq('id', session.salon_id)
 
     // 6. Store the generation record
-    const insertResult = await supabaseAdmin
+    const insertResult = await (supabase as any)
       .from('ai_generations')
       .insert({
-        session_id: session_token, // Use session_token directly since it's the session ID
+        session_id: session_token,
         style_id: style_id,
         original_image_url: originalFileName,
         generated_image_url: generatedImageUrl,
-        processing_time_ms: process.env.GEMINI_API_KEY ? 15000 : 2000, // Real AI takes longer
-        prompt_used: style.prompt
+        processing_time_ms: process.env.GEMINI_API_KEY ? 15000 : 2000,
+        prompt_used: style.prompt as any
       })
     
     if (insertResult.error) {
@@ -249,9 +268,9 @@ export async function POST(request: NextRequest) {
       },
       style: {
         id: style_id,
-        name: style.name,
-        category: style.category,
-        prompt: style.prompt // Include the AI prompt in response
+        name: style.name as string,
+        category: style.category as string,
+        prompt: style.prompt as any // Include the AI prompt in response
       },
       session: {
         ai_uses_remaining: session.max_ai_uses - (session.ai_uses_count + 1),

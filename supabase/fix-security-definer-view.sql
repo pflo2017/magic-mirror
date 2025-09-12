@@ -22,3 +22,4 @@ WHERE is_active = true;
 
 -- Enable RLS on the view if needed
 -- ALTER VIEW public.salon_locations ENABLE ROW LEVEL SECURITY;
+

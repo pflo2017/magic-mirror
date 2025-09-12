@@ -87,3 +87,4 @@ CREATE POLICY "Salon owners can delete their logos" ON storage.objects
     auth.role() = 'authenticated'
   );
 
+

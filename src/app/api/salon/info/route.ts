@@ -13,38 +13,17 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Fetch salon information using admin client
+    // Fetch salon information using admin client (v1 schema fields only)
     const { data: salon, error } = await supabaseAdmin
       .from('salons')
-      .select('id, name, email, logo_url, subscription_status, subscription_plan, city, address')
+      .select('id, name, email, subscription_status')
       .eq('id', salonId)
       .single()
 
     if (error || !salon) {
       console.error('Salon fetch error:', error)
-      // Try to find salon by auth_user_id if direct ID lookup failed
-      const { data: salonByAuth } = await supabaseAdmin
-        .from('salons')
-        .select('id, name, email, logo_url, subscription_status, subscription_plan, city, address')
-        .eq('auth_user_id', salonId)
-        .single()
-
-      if (salonByAuth) {
-        return NextResponse.json({
-          success: true,
-          salon: {
-            id: salonByAuth.id,
-            name: salonByAuth.name || `Salon ${salonByAuth.email}`,
-            logo: salonByAuth.logo_url,
-            subscription_status: salonByAuth.subscription_status,
-            subscription_plan: salonByAuth.subscription_plan,
-            city: salonByAuth.city,
-            address: salonByAuth.address
-          }
-        })
-      }
-
-      // Return a default salon for demo purposes
+      
+      // Return a default salon for demo purposes (v1 compatible)
       return NextResponse.json({
         success: true,
         salon: {
@@ -52,7 +31,9 @@ export async function GET(request: NextRequest) {
           name: 'Magic Mirror Virtual Try-On',
           logo: null,
           subscription_status: 'active',
-          subscription_plan: 'starter'
+          subscription_plan: null,
+          city: null,
+          address: null
         }
       })
     }
@@ -62,11 +43,11 @@ export async function GET(request: NextRequest) {
       salon: {
         id: salon.id,
         name: salon.name || `Salon ${salon.email}`,
-        logo: salon.logo_url,
+        logo: null, // v1 doesn't have logo_url field
         subscription_status: salon.subscription_status,
-        subscription_plan: salon.subscription_plan,
-        city: salon.city,
-        address: salon.address
+        subscription_plan: null, // v1 doesn't have subscription_plan field
+        city: null, // v1 doesn't have city field
+        address: null // v1 doesn't have address field
       }
     })
 

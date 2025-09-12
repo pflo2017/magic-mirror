@@ -488,3 +488,4 @@ REQUIREMENTS:
 - **Hair Color:** Natural brown (#8B4513) for all styles
 - **Quality:** Professional salon reference photo standard
 - **Focus:** Clear view of the hairstyle structure and cut
+

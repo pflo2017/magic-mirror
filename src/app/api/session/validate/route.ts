@@ -1,5 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createClient } from '@supabase/supabase-js'
+import { Database } from '@/types/database'
+
+type ClientSession = Database['public']['Tables']['client_sessions']['Row']
+
+// Create a properly typed Supabase client
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+
+const supabase = createClient<Database>(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+})
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,7 +26,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const supabase = createServerSupabaseClient()
+    // Using the properly typed client defined above
 
     // Get session details
     const { data: session, error } = await supabase
@@ -20,7 +34,7 @@ export async function POST(request: NextRequest) {
       .select('*')
       .eq('id', session_token)
       .eq('is_active', true)
-      .single()
+      .single() as { data: ClientSession | null, error: any }
 
     if (error || !session) {
       return NextResponse.json(
@@ -35,7 +49,7 @@ export async function POST(request: NextRequest) {
     
     if (now > expiresAt) {
       // Mark session as inactive
-      await supabase
+      await (supabase as any)
         .from('client_sessions')
         .update({ is_active: false })
         .eq('id', session_token)

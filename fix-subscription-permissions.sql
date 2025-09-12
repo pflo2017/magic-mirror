@@ -26,3 +26,4 @@ FROM information_schema.table_privileges
 WHERE table_name IN ('subscription_plans', 'overage_packages', 'billing_history')
 AND grantee IN ('service_role', 'authenticated', 'anon')
 ORDER BY table_name, grantee;
+

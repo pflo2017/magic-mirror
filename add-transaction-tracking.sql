@@ -68,3 +68,4 @@ GRANT SELECT ON transaction_summary TO service_role, authenticated;
 SELECT 
   'Transaction tracking enhanced!' as status,
   'Now storing: Stripe IDs, payment methods, metadata, refunds, and more' as details;
+

@@ -220,3 +220,4 @@ const categories = {
 - [ ] Loading performance is acceptable
 
 This comprehensive database will give your clients clear expectations and help your AI generate accurate transformations! 🎉
+

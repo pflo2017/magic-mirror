@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
 
     // Get basic session data first (without joins)
     const { data: sessions, error: sessionsError } = await supabaseAdmin
-      .from('sessions')
+      .from('client_sessions')
       .select(`
         id,
         created_at,
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
 
     // Get total count for pagination
     const { count, error: countError } = await supabaseAdmin
-      .from('sessions')
+      .from('client_sessions')
       .select('*', { count: 'exact', head: true })
       .eq('salon_id', salonId)
 

@@ -11,20 +11,20 @@
  *   npm run dev:worker    # Development with auto-reload
  */
 
-import { aiWorker } from '../lib/queue'
+import { hairTransformWorker } from '../lib/queue'
 
 console.log('🚀 AI Worker starting...')
 
 // Handle graceful shutdown
 process.on('SIGTERM', async () => {
   console.log('📴 Received SIGTERM, shutting down gracefully...')
-  await aiWorker.close()
+  await hairTransformWorker.close()
   process.exit(0)
 })
 
 process.on('SIGINT', async () => {
   console.log('📴 Received SIGINT, shutting down gracefully...')
-  await aiWorker.close()
+  await hairTransformWorker.close()
   process.exit(0)
 })
 

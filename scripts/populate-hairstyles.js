@@ -146,3 +146,4 @@ async function populateHairstyles() {
 
 // Run the script
 populateHairstyles();
+

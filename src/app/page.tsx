@@ -209,35 +209,38 @@ export default function Home() {
               </div>
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-                Stop Losing Clients to{' '}
+                Try Any Hairstyle with{' '}
                 <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                  "Haircut Regret"
+                  AI Magic
                 </span>
               </h1>
               
               <p className="text-xl md:text-2xl text-white/80 mb-6 leading-relaxed">
-                Salon owners using Magic Mirror see{' '}
-                <span className="text-purple-300 font-semibold">40% fewer refund requests</span> and{' '}
-                <span className="text-pink-300 font-semibold">60% more repeat bookings</span>.
+                See how you'll look with any hairstyle, color, or cut{' '}
+                <span className="text-purple-300 font-semibold">instantly</span> using{' '}
+                <span className="text-pink-300 font-semibold">advanced AI technology</span>.
               </p>
               
               <p className="text-lg text-white/70 mb-8">
-                Show clients exactly how they'll look before you cut.
+                Perfect for individuals trying new looks or salons serving clients.
               </p>
 
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
                 <Link 
-                  href="/salon/signup" 
+                  href="/individual/tryon" 
                   className="group px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full hover:from-purple-700 hover:to-pink-700 font-semibold text-lg transition-all transform hover:scale-105 shadow-xl flex items-center justify-center space-x-2"
                 >
-                  <span>Start Free Trial</span>
+                  <span>Try It Now - Free</span>
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
-                <button className="group px-8 py-4 border-2 border-white/30 text-white rounded-full hover:bg-white/10 font-semibold text-lg transition-all backdrop-blur-sm flex items-center justify-center space-x-2">
-                  <Play className="w-5 h-5" />
-                  <span>Watch Demo</span>
-                </button>
+                <Link 
+                  href="/salon/signup" 
+                  className="group px-8 py-4 border-2 border-white/30 text-white rounded-full hover:bg-white/10 font-semibold text-lg transition-all backdrop-blur-sm flex items-center justify-center space-x-2"
+                >
+                  <span>For Salons</span>
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
               </div>
 
               {/* Stats */}
@@ -310,18 +313,27 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-r from-purple-600/30 to-pink-600/30"></div>
         <div className="relative max-w-4xl mx-auto text-center px-6">
           <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
-            Ready to Transform Your Salon?
+            Ready to Try Your New Look?
           </h2>
           <p className="text-xl mb-8 text-white/80">
-            Join hundreds of salons already using Magic Mirror to delight their clients
+            Join thousands of people discovering their perfect hairstyle with AI
           </p>
-          <Link 
-            href="/salon/signup" 
-            className="inline-flex items-center space-x-2 px-8 py-4 bg-white text-purple-600 rounded-full hover:bg-gray-100 font-semibold text-lg transition-all transform hover:scale-105 shadow-xl"
-          >
-            <span>Get Started Free</span>
-            <ArrowRight className="w-5 h-5" />
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link 
+              href="/individual/tryon" 
+              className="inline-flex items-center space-x-2 px-8 py-4 bg-white text-purple-600 rounded-full hover:bg-gray-100 font-semibold text-lg transition-all transform hover:scale-105 shadow-xl"
+            >
+              <span>Try It Free</span>
+              <ArrowRight className="w-5 h-5" />
+            </Link>
+            <Link 
+              href="/salon/signup" 
+              className="inline-flex items-center space-x-2 px-8 py-4 border-2 border-white text-white rounded-full hover:bg-white/10 font-semibold text-lg transition-all backdrop-blur-sm"
+            >
+              <span>For Salons</span>
+              <ArrowRight className="w-5 h-5" />
+            </Link>
+          </div>
         </div>
       </div>
     </div>

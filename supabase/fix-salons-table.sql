@@ -94,3 +94,4 @@ CREATE POLICY "Users can manage their own salon" ON salons
 -- Ensure RLS is enabled
 ALTER TABLE salons ENABLE ROW LEVEL SECURITY;
 
+

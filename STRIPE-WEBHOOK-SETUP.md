@@ -48,3 +48,4 @@ Since Stripe can't reach `localhost:3000`, you need to expose it:
 For production, replace `localhost:3000` with your actual domain:
 - **Webhook URL**: `https://yourdomain.com/api/stripe/webhook`
 - **Use production** Stripe keys and webhook secret
+

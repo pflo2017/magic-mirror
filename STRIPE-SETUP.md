@@ -91,3 +91,4 @@ Your Stripe integration is now ready. The system will:
 - Process webhooks when payments succeed
 - Automatically add images to salon accounts
 - Record all transactions in billing history
+

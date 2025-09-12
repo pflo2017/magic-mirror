@@ -90,3 +90,4 @@ When deploying to production:
 
 The OAuth buttons will show error messages until you complete the Supabase configuration above.
 
+
