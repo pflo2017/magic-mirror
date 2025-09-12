@@ -59,15 +59,81 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // For individual users, we'll provide a demo experience (no AI processing to keep it simple)
-    // In a production environment, you could integrate AI processing here
-    let generatedImageUrl: string = image_url // Use original image as demo
-    let aiStatus = { 
-      used_ai: false, 
-      prompt_used: 'Demo mode - Individual user experience'
+    // Process with AI transformation (same as salon users)
+    let generatedImageUrl: string
+    let usedAI = false
+    let aiError: string | undefined
+    let aiPromptUsed: string | undefined
+    let usesReference = false
+    
+    if (process.env.GEMINI_API_KEY) {
+      console.log('🎨 Processing individual user with Gemini AI:', {
+        style: style.name,
+        category: style.category
+      })
+
+      try {
+        // Extract base64 data from the data URL
+        const base64Data = image_url.split(',')[1]
+        
+        // Try reference-based transformation first
+        console.log('🖼️ Attempting reference-based transformation for individual user:', style.name)
+        
+        // Import and use the reference-based implementation
+        const { transformHairWithReference } = await import('@/lib/gemini-with-reference')
+        
+        let aiResult = await transformHairWithReference(
+          base64Data,
+          { ...(style.prompt as any), name: style.name },
+          decoded.session_id,
+          style.category as any
+        )
+        
+        console.log('📊 Individual reference transformation result:', { success: aiResult.success, hasImageUrl: !!aiResult.imageUrl, error: aiResult.error, usedReference: aiResult.usedReference })
+        
+        // If reference-based transformation failed due to missing reference image, fall back to standard
+        if (!aiResult.success && aiResult.error?.includes('No reference image found')) {
+          console.log('🚀 Individual user falling back to standard Gemini transformation...')
+          // Import and use the standard implementation
+          const { transformHairWithGemini } = await import('@/lib/gemini-production')
+          
+          aiResult = await transformHairWithGemini(
+            base64Data,
+            style.prompt as any,
+            decoded.session_id
+          )
+          usesReference = false
+        } else {
+          usesReference = true
+        }
+
+        if (aiResult.success && aiResult.imageUrl) {
+          generatedImageUrl = aiResult.imageUrl
+          usedAI = (aiResult as any).usedAI || true
+          aiError = aiResult.error
+          aiPromptUsed = aiResult.prompt
+          console.log(`✅ Individual hair transformation completed! AI: ${usedAI}, Reference: ${usesReference}`)
+        } else {
+          console.error(`❌ Individual transformation failed:`, aiResult.error)
+          throw new Error(aiResult.error || 'Hair transformation failed')
+        }
+      } catch (error: any) {
+        console.error('❌ Individual Gemini transformation error:', error.message)
+        // Fallback to demo image if Gemini fails
+        generatedImageUrl = `https://via.placeholder.com/400x400/8B5CF6/FFFFFF?text=AI+Temporarily+Unavailable%0A%0ATry+Again+Later`
+        usedAI = false
+        aiError = error.message
+      }
+    } else {
+      console.log('GEMINI_API_KEY not configured for individual user, using demo mode')
+      // Simulate processing delay for demo
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      generatedImageUrl = `https://picsum.photos/400/400?random=${Date.now()}`
+      usedAI = false
+      aiError = 'API key not configured'
     }
 
-    console.log('✅ Demo transformation completed for individual user')
+    console.log('✅ Individual transformation completed:', { usedAI, usesReference })
 
     // Calculate remaining time
     const timeRemaining = Math.max(0, Math.floor((expiresAt.getTime() - now.getTime()) / 1000))
@@ -79,16 +145,24 @@ export async function POST(request: NextRequest) {
         ai_uses_remaining: decoded.ai_uses_remaining - 1,
         updated_at: new Date().toISOString()
       },
-      JWT_SECRET,
-      { expiresIn: `${Math.ceil(timeRemaining / 60)}m` }
+      JWT_SECRET
+      // Note: expiresIn removed since decoded token already has exp property
     )
 
     return NextResponse.json({
       success: true,
       generated_image_url: generatedImageUrl,
       new_session_token: newSessionToken, // Updated token with decremented uses
+      ai_status: {
+        used_ai: usedAI,
+        error: aiError,
+        model: usedAI ? 'gemini-2.5-flash-image-preview' : 'demo',
+        note: usedAI ? (usesReference ? 'Enhanced with reference image - Powered by Google Gemini' : 'Powered by Google Gemini') : 'Demo mode or API not configured',
+        uses_reference: usedAI && usesReference,
+        prompt_used: aiPromptUsed
+      },
       style: {
-        id: style.id,
+        id: style_id,
         name: style.name,
         category: style.category,
         prompt: style.prompt
@@ -97,7 +171,7 @@ export async function POST(request: NextRequest) {
         ai_uses_remaining: decoded.ai_uses_remaining - 1,
         time_remaining: timeRemaining
       },
-      ai_status: aiStatus
+      api_configured: !!process.env.GEMINI_API_KEY
     })
 
   } catch (error) {
