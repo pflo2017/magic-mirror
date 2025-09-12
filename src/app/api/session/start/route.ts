@@ -34,9 +34,8 @@ export async function POST(request: NextRequest) {
 
     // Create session record
     const { data: session, error } = await supabaseAdmin
-      .from('sessions')
+      .from('client_sessions')
       .insert({
-        id: sessionToken,
         salon_id: salon.id,
         expires_at: expiresAt.toISOString(),
         max_ai_uses: salon.max_ai_uses || 5,
@@ -56,7 +55,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      session_token: sessionToken,
+      session_token: session.id,
       expires_at: expiresAt.toISOString(),
       max_ai_uses: salon.max_ai_uses || 5,
       session_duration: salon.session_duration || 15,

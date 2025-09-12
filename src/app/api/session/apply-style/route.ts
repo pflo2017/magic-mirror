@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
 
     // 1. Validate session token
     const { data: session, error: sessionError } = await supabaseAdmin
-      .from('sessions')
+      .from('client_sessions')
       .select('*')
       .eq('id', session_token)
       .eq('is_active', true)
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     
     if (now > expiresAt) {
       await supabaseAdmin
-        .from('sessions')
+        .from('client_sessions')
         .update({ is_active: false })
         .eq('id', session_token)
 
@@ -200,7 +200,7 @@ export async function POST(request: NextRequest) {
 
     // 5. Update session usage count and salon image count
     await supabaseAdmin
-      .from('sessions')
+      .from('client_sessions')
       .update({ 
         ai_uses_count: session.ai_uses_count + 1
       })

@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
 
     // Get session details
     const { data: session, error } = await supabase
-      .from('sessions')
+      .from('client_sessions')
       .select('*')
       .eq('id', session_token)
       .eq('is_active', true)
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     if (now > expiresAt) {
       // Mark session as inactive
       await supabase
-        .from('sessions')
+        .from('client_sessions')
         .update({ is_active: false })
         .eq('id', session_token)
 
