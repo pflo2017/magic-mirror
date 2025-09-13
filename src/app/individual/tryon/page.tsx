@@ -14,7 +14,7 @@ interface Style {
 
 type Gender = 'women' | 'men'
 type Category = 'hairstyles' | 'colors' | 'beards'
-type Step = 'welcome' | 'upload' | 'gender' | 'category' | 'styles' | 'processing' | 'result'
+type Step = 'welcome' | 'upload' | 'gender' | 'category' | 'styles' | 'processing' | 'result' | 'credits-exhausted'
 
 export default function IndividualTryOnInterface() {
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -287,8 +287,14 @@ export default function IndividualTryOnInterface() {
         setTimeout(() => setStep('result'), 1000)
       } else {
         const errorData = await response.json()
-        alert(errorData.error || 'Failed to process image. Please try again.')
-        setStep('styles')
+        
+        // Handle credits exhausted (403 error)
+        if (response.status === 403 && errorData.error?.includes('No AI uses remaining')) {
+          setStep('credits-exhausted')
+        } else {
+          alert(errorData.error || 'Failed to process image. Please try again.')
+          setStep('styles')
+        }
       }
     } catch (error) {
       console.error('Processing error:', error)
@@ -908,6 +914,64 @@ export default function IndividualTryOnInterface() {
                 >
                   <Share2 className="w-5 h-5" />
                   <span>Save & Share</span>
+                </button>
+
+                <button
+                  onClick={resetSession}
+                  className="w-full bg-white/10 backdrop-blur-sm border border-white/20 text-white py-3 rounded-xl font-medium hover:bg-white/20 transition-all"
+                >
+                  Start Over
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Credits Exhausted Step */}
+          {step === 'credits-exhausted' && (
+            <div className="py-8">
+              <div className="text-center mb-8">
+                <div className="w-20 h-20 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Sparkles className="w-10 h-10 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">Free Credits Used!</h2>
+                <p className="text-white/70 mb-4">You've used all your free AI transformations.</p>
+                <p className="text-white/60 text-sm">Create an account to get more credits and unlock premium features!</p>
+              </div>
+
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 mb-8">
+                <h3 className="text-lg font-semibold text-white mb-4">Individual Packages</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                    <span className="text-white">10 AI Transformations</span>
+                    <span className="text-purple-400 font-semibold">$2.99</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                    <span className="text-white">20 AI Transformations</span>
+                    <span className="text-purple-400 font-semibold">$5.99</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg border border-purple-500/30">
+                    <span className="text-white">40 AI Transformations</span>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-xs bg-purple-600 text-white px-2 py-1 rounded-full">POPULAR</span>
+                      <span className="text-purple-400 font-semibold">$9.99</span>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                    <span className="text-white">100 AI Transformations</span>
+                    <span className="text-purple-400 font-semibold">$19.99</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <button
+                  onClick={() => {
+                    // TODO: Implement registration/payment flow
+                    alert('Registration and payment flow coming soon!')
+                  }}
+                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 rounded-2xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all flex items-center justify-center space-x-2"
+                >
+                  <span>Create Account & Get Credits</span>
                 </button>
 
                 <button

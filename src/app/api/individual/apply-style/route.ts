@@ -40,7 +40,17 @@ export async function POST(request: NextRequest) {
     // Check if user has remaining AI uses
     if (decoded.ai_uses_remaining <= 0) {
       return NextResponse.json(
-        { error: 'No AI uses remaining in this session' },
+        { 
+          error: 'No AI uses remaining in this session',
+          message: 'You have used all your free AI transformations. Create an account to get more credits!',
+          upgrade_required: true,
+          pricing: [
+            { credits: 10, price: 2.99 },
+            { credits: 20, price: 5.99 },
+            { credits: 40, price: 9.99, popular: true },
+            { credits: 100, price: 19.99 }
+          ]
+        },
         { status: 403 }
       )
     }

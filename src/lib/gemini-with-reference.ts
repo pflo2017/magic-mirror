@@ -334,50 +334,28 @@ async function getReferenceImage(styleName: string, gender?: string, attemptId?:
  * Create enhanced prompt that uses reference image
  */
 function createReferenceBasedPrompt(instruction: string, styleName: string): string {
-  return `PROFESSIONAL HAIR STYLING TRANSFORMATION - You are performing a complete hair makeover. You have TWO images:
-1. ORIGINAL PHOTO: Person who needs hair transformation (first image)
-2. REFERENCE HAIRSTYLE: Target hairstyle to achieve (second image)
+  return `You have TWO images to work with:
+IMAGE 1: Original person's photo
+IMAGE 2: Reference hairstyle (the exact style to copy)
 
-CRITICAL TRANSFORMATION REQUIREMENTS:
-- COMPLETELY CHANGE THE HAIR to match the reference image exactly
-- The hair transformation MUST be dramatic and clearly visible
-- DO NOT make subtle changes - make BOLD, OBVIOUS hair transformations
-- The result should look like a completely different hairstyle
+TASK: Transform the person's hair in IMAGE 1 to match the hairstyle shown in IMAGE 2.
 
-HAIR TRANSFORMATION INSTRUCTION: ${instruction}
+CRITICAL: Look at IMAGE 2 carefully - this shows the EXACT hairstyle the user wants. Copy this hairstyle precisely onto the person in IMAGE 1.
 
-MANDATORY TRANSFORMATION STEPS:
-1. ANALYZE the reference hairstyle image - note the exact hair length, layers, texture, and shape
-2. COMPLETELY TRANSFORM the original person's hair to match the reference exactly
-3. CHANGE hair length if needed (shorter or longer to match reference)
-4. CHANGE hair layers and texture to match reference
-5. CHANGE hair shape and volume to match reference
-6. PRESERVE the person's face, skin, expression, and background exactly
-7. MAKE THE HAIR CHANGE DRAMATIC AND OBVIOUS
+SPECIFIC INSTRUCTIONS: ${instruction}
 
-TRANSFORMATION INTENSITY:
-- This is a COMPLETE HAIR MAKEOVER, not a subtle adjustment
-- The before and after should look dramatically different
-- If the reference shows short hair, make the hair SHORT
-- If the reference shows layers, add CLEAR LAYERS
-- If the reference shows bangs, add VISIBLE BANGS
-- Make changes that are immediately noticeable
+TRANSFORMATION RULES:
+1. Study IMAGE 2 (reference) first - note the exact hair length, cut, and style
+2. Apply that SAME hairstyle to the person in IMAGE 1
+3. Keep the person's face, skin, and background from IMAGE 1 unchanged
+4. Make the hair transformation clear and obvious
+5. The result should show the person with the hairstyle from IMAGE 2
 
-IMAGE FORMAT REQUIREMENTS:
-- MAINTAIN THE EXACT SAME DIMENSIONS as the original image
-- PRESERVE THE SAME ASPECT RATIO as the input image
-- Keep the same image composition, framing, and crop
-- Generate the output in the IDENTICAL FORMAT as the original
-- Do not resize, crop, or change the image dimensions
-- The output image must have the same width and height as the input
+If IMAGE 2 shows very short hair (like a buzz cut), make the person's hair very short.
+If IMAGE 2 shows long hair, make the person's hair long.
+Copy the reference hairstyle exactly as shown.
 
-QUALITY REQUIREMENTS:
-- The transformation must be professional salon-quality
-- Hair should look natural and realistic on the person
-- Maintain proper lighting and image quality
-- Ensure the new hairstyle suits the person's face shape
-
-Generate a dramatically transformed image where the hair clearly matches the reference hairstyle with obvious, visible changes, while preserving the exact same image format and dimensions as the original.`
+Generate the transformed image now.`
 }
 
 /**
